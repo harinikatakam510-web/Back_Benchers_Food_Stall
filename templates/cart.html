@@ -325,6 +325,12 @@
 
     <!-- ================= SCRIPT ================= -->
 
+    <!-- Prices come from MENU in app.py -->
+    <script>
+      window.MENU_PRICES = {{ menu_prices | tojson }};
+      window.MAX_QUANTITY = {{ max_quantity }};
+    </script>
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
     <script>

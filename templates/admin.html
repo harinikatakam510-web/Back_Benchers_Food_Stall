@@ -382,7 +382,8 @@
         <h1>Admin Orders</h1>
 
         <span>
-          Verify UPI payments using the UTR number before accepting orders.
+          Paid orders appear here automatically. Use the buttons to move
+          each order along.
         </span>
       </section>
 
@@ -390,7 +391,7 @@
 
       <div class="admin-actions">
         <div class="order-count">
-          📦 Orders:
+          📦 Active Orders:
           <span id="order-count">0</span>
         </div>
 
@@ -444,15 +445,37 @@
       }
 
       /* =====================================================
+         KITCHEN STATUS FLOW
+         Confirmed -> Preparing -> Ready -> Completed
+      ===================================================== */
+
+      const NEXT_STATUS = {
+        Confirmed: "Preparing",
+        Preparing: "Ready",
+        Ready: "Completed",
+      };
+
+      const STATUS_ICON = {
+        Confirmed: "🆕",
+        Preparing: "👨‍🍳",
+        Ready: "✅",
+        Completed: "📦",
+        Cancelled: "❌",
+      };
+
+      let knownOrderIds = null;
+
+      /* =====================================================
          LOAD ORDERS
       ===================================================== */
 
       function loadOrders() {
-        fetch("/api/orders", {
-          method: "GET",
-          cache: "no-store",
-        })
+        fetch(location.origin + "/api/orders", { method: "GET", cache: "no-store" })
           .then(function (response) {
+            if (response.status === 401) {
+              throw new Error("Login expired. Please reload the page.");
+            }
+
             if (!response.ok) {
               throw new Error("Unable to load orders.");
             }
@@ -465,317 +488,47 @@
 
             const count = document.getElementById("order-count");
 
+            const orders = (data.success && data.orders) || [];
+
+            /* Beep when a new order arrives (not on first load). */
+
+            const ids = orders.map(function (order) {
+              return order.orderId;
+            });
+
+            if (
+              knownOrderIds &&
+              ids.some(function (id) {
+                return !knownOrderIds.includes(id);
+              })
+            ) {
+              beep();
+            }
+
+            knownOrderIds = ids;
+
+            /* Active = not completed / cancelled */
+
+            count.textContent = orders.filter(function (order) {
+              return order.status !== "Completed" && order.status !== "Cancelled";
+            }).length;
+
             container.innerHTML = "";
 
-            /* =================================================
-             EMPTY ORDERS
-          ================================================= */
-
-            if (!data.success || !data.orders || data.orders.length === 0) {
-              count.textContent = "0";
-
+            if (orders.length === 0) {
               container.innerHTML = `
-
-              <div class="empty-orders">
-
-                <div>🛒</div>
-
-                <h2>No Orders Yet</h2>
-
-                <p>
-                  Customer orders will appear here.
-                </p>
-
-              </div>
-
-            `;
+                <div class="empty-orders">
+                  <div>🛒</div>
+                  <h2>No Orders Yet</h2>
+                  <p>Paid customer orders will appear here.</p>
+                </div>
+              `;
 
               return;
             }
 
-            /* =================================================
-             ORDER COUNT
-          ================================================= */
-
-            count.textContent = data.orders.length;
-
-            /* =================================================
-             DISPLAY ORDERS
-          ================================================= */
-
-            data.orders.forEach(function (order) {
-              const card = document.createElement("div");
-
-              /* ===============================
-               PAYMENT STATUS
-            =============================== */
-
-              const paymentStatus =
-                order.paymentStatus || "Pending Verification";
-
-              let statusClass = "pending";
-
-              if (paymentStatus.toLowerCase() === "paid") {
-                statusClass = "paid";
-              } else if (paymentStatus.toLowerCase() === "rejected") {
-                statusClass = "rejected";
-              }
-
-              card.className = "order-card " + statusClass;
-
-              /* ===============================
-               ITEMS
-            =============================== */
-
-              let itemsHTML = "";
-
-              if (Array.isArray(order.items) && order.items.length > 0) {
-                order.items.forEach(function (item) {
-                  const quantity = Number(item.quantity) || 1;
-
-                  const price = Number(item.price) || 0;
-
-                  const itemTotal = price * quantity;
-
-                  let options = "";
-
-                  if (item.option) {
-                    options += escapeHTML(item.option);
-                  }
-
-                  if (item.size) {
-                    if (options) {
-                      options += " • ";
-                    }
-
-                    options += escapeHTML(item.size);
-                  }
-
-                  itemsHTML += `
-
-                  <div class="order-item">
-
-                    <div>
-
-                      <strong>
-                        ${escapeHTML(item.name)}
-                      </strong>
-
-                      <div class="item-details">
-
-                        ${options ? options + " • " : ""}
-
-                        Qty: ${quantity}
-
-                      </div>
-
-                    </div>
-
-
-                    <div class="item-price">
-
-                      ₹${itemTotal.toFixed(2)}
-
-                    </div>
-
-                  </div>
-
-                `;
-                });
-              }
-
-              /* ===============================
-               PAYMENT DETAILS
-            =============================== */
-
-              const utr =
-                order.utr ||
-                order.transactionId ||
-                order.paymentReference ||
-                "Not provided";
-
-              const paymentMethod = order.payment || "Direct UPI";
-
-              /* ===============================
-               ACTION BUTTONS
-            =============================== */
-
-              let actionButtons = "";
-
-              if (
-                paymentStatus.toLowerCase() === "pending verification" ||
-                paymentStatus.toLowerCase() === "pending"
-              ) {
-                actionButtons = `
-
-                <div class="admin-buttons">
-
-                  <button
-                    type="button"
-                    class="accept-btn"
-                    onclick="updatePaymentStatus(
-                      '${escapeHTML(order.orderId)}',
-                      'Paid'
-                    )"
-                  >
-                    ✅ ACCEPT PAYMENT
-                  </button>
-
-
-                  <button
-                    type="button"
-                    class="reject-btn"
-                    onclick="updatePaymentStatus(
-                      '${escapeHTML(order.orderId)}',
-                      'Rejected'
-                    )"
-                  >
-                    ❌ REJECT PAYMENT
-                  </button>
-
-                </div>
-
-              `;
-              }
-
-              /* ===============================
-               CARD HTML
-            =============================== */
-
-              card.innerHTML = `
-
-              <div class="order-top">
-
-                <div class="order-id">
-
-                  🔔 ${escapeHTML(order.orderId)}
-
-                </div>
-
-
-                <div class="order-time">
-
-                  ${escapeHTML(order.createdAt)}
-
-                </div>
-
-              </div>
-
-
-              <div class="customer-info">
-
-                <h3>
-                  👤 ${escapeHTML(order.customerName)}
-                </h3>
-
-                <p>
-                  📱 ${escapeHTML(order.phone)}
-                </p>
-
-                ${
-                  order.table
-                    ? `
-                    <p>
-                      🪑 ${escapeHTML(order.table)}
-                    </p>
-                  `
-                    : ""
-                }
-
-              </div>
-
-
-              <h3 class="items-title">
-
-                🧾 Ordered Items
-
-              </h3>
-
-
-              ${itemsHTML}
-
-
-              <!-- PAYMENT INFORMATION -->
-
-              <div class="payment-box">
-
-                <h3>
-                  💳 UPI Payment Details
-                </h3>
-
-
-                <div class="payment-row">
-
-                  <span class="payment-label">
-                    Payment Method
-                  </span>
-
-                  <span class="payment-value">
-                    ${escapeHTML(paymentMethod)}
-                  </span>
-
-                </div>
-
-
-                <div class="payment-row">
-
-                  <span class="payment-label">
-                    UTR / Transaction ID
-                  </span>
-
-                  <span class="utr-value">
-                    ${escapeHTML(utr)}
-                  </span>
-
-                </div>
-
-
-                <div class="payment-row">
-
-                  <span class="payment-label">
-                    Payment Status
-                  </span>
-
-                  <span class="status ${statusClass}">
-
-                    ${escapeHTML(paymentStatus)}
-
-                  </span>
-
-                </div>
-
-              </div>
-
-
-              <!-- ORDER BOTTOM -->
-
-              <div class="order-bottom">
-
-                <div class="payment">
-
-                  💳 Payment:
-                  <span>
-                    Direct UPI
-                  </span>
-
-                </div>
-
-
-                <div class="total">
-
-                  Total:
-                  ₹${Number(order.total || 0).toFixed(2)}
-
-                </div>
-
-              </div>
-
-
-              ${actionButtons}
-
-            `;
-
-              container.appendChild(card);
+            orders.forEach(function (order) {
+              container.appendChild(renderOrder(order));
             });
           })
 
@@ -783,99 +536,210 @@
             console.error("Order loading error:", error);
 
             document.getElementById("orders-container").innerHTML = `
-
-            <div class="empty-orders">
-
-              <div>⚠️</div>
-
-              <h2>Unable to Load Orders</h2>
-
-              <p>
-                Please check whether Flask server is running.
-              </p>
-
-            </div>
-
-          `;
+              <div class="empty-orders">
+                <div>⚠️</div>
+                <h2>Unable to Load Orders</h2>
+                <p>${escapeHTML(error.message)}</p>
+              </div>
+            `;
           });
       }
 
       /* =====================================================
-         UPDATE PAYMENT STATUS
-         
-         NOTE:
-         This requires /api/orders/<order_id>/payment-status
-         route in app.py.
+         ONE ORDER CARD
       ===================================================== */
 
-      function updatePaymentStatus(orderId, status) {
-        if (!orderId) {
+      function renderOrder(order) {
+        const card = document.createElement("div");
+
+        const status = order.status || "Confirmed";
+
+        const isClosed = status === "Completed" || status === "Cancelled";
+
+        card.className =
+          "order-card " +
+          (status === "Cancelled" ? "rejected" : isClosed ? "" : "paid");
+
+        /* ITEMS */
+
+        let itemsHTML = "";
+
+        (order.items || []).forEach(function (item) {
+          const quantity = Number(item.quantity) || 1;
+
+          const itemTotal = (Number(item.price) || 0) * quantity;
+
+          const details = [item.option, item.size]
+            .filter(Boolean)
+            .map(escapeHTML);
+
+          details.push("Qty: " + quantity);
+
+          itemsHTML += `
+            <div class="order-item">
+              <div>
+                <strong>${escapeHTML(item.name)}</strong>
+                <div class="item-details">${details.join(" • ")}</div>
+              </div>
+              <div class="item-price">₹${itemTotal.toFixed(2)}</div>
+            </div>
+          `;
+        });
+
+        /* BUTTONS */
+
+        let buttonsHTML = "";
+
+        if (!isClosed) {
+          const next = NEXT_STATUS[status];
+
+          buttonsHTML = `
+            <div class="admin-buttons">
+              ${
+                next
+                  ? `<button type="button" class="accept-btn"
+                       data-order="${escapeHTML(order.orderId)}"
+                       data-status="${next}">
+                       ${STATUS_ICON[next]} MARK ${next.toUpperCase()}
+                     </button>`
+                  : ""
+              }
+              <button type="button" class="reject-btn"
+                data-order="${escapeHTML(order.orderId)}"
+                data-status="Cancelled">
+                ❌ CANCEL ORDER
+              </button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="order-top">
+            <div class="order-id">🔔 ${escapeHTML(order.orderId)}</div>
+            <div class="order-time">${escapeHTML(order.createdAt)}</div>
+          </div>
+
+          <div class="customer-info">
+            <h3>👤 ${escapeHTML(order.customerName)}</h3>
+            <p>📱 ${escapeHTML(order.phone)}</p>
+            ${order.table ? `<p>🪑 ${escapeHTML(order.table)}</p>` : ""}
+          </div>
+
+          <h3 class="items-title">🧾 Ordered Items</h3>
+
+          ${itemsHTML}
+
+          <div class="payment-box">
+            <h3>💳 Payment Details</h3>
+
+            <div class="payment-row">
+              <span class="payment-label">Payment Method</span>
+              <span class="payment-value">${escapeHTML(order.payment || "Razorpay")}</span>
+            </div>
+
+            <div class="payment-row">
+              <span class="payment-label">Razorpay Payment ID</span>
+              <span class="utr-value">${escapeHTML(order.transactionId || "—")}</span>
+            </div>
+
+            <div class="payment-row">
+              <span class="payment-label">Payment Status</span>
+              <span class="status paid">${escapeHTML(order.paymentStatus || "Paid")}</span>
+            </div>
+
+            <div class="payment-row">
+              <span class="payment-label">Order Status</span>
+              <span class="status ${status === "Cancelled" ? "rejected" : "pending"}">
+                ${STATUS_ICON[status] || ""} ${escapeHTML(status)}
+              </span>
+            </div>
+          </div>
+
+          <div class="order-bottom">
+            <div class="payment">💳 Paid via <span>Razorpay</span></div>
+            <div class="total">Total: ₹${Number(order.total || 0).toFixed(2)}</div>
+          </div>
+
+          ${buttonsHTML}
+        `;
+
+        card.querySelectorAll("button[data-status]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            updateOrderStatus(button.dataset.order, button.dataset.status);
+          });
+        });
+
+        return card;
+      }
+
+      /* =====================================================
+         UPDATE ORDER STATUS
+      ===================================================== */
+
+      function updateOrderStatus(orderId, status) {
+        if (
+          status === "Cancelled" &&
+          !confirm(
+            "Cancel order " +
+              orderId +
+              "?\n\nThis does NOT refund the money. " +
+              "Refund it from the Razorpay Dashboard if needed.",
+          )
+        ) {
           return;
         }
 
-        const message =
-          status === "Paid"
-            ? "Did you verify this UTR/payment in your UPI app and confirm that the amount was received?"
-            : "Are you sure you want to reject this payment?";
-
-        if (!confirm(message)) {
-          return;
-        }
-
-        fetch(
-          "/api/orders/" + encodeURIComponent(orderId) + "/payment-status",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json",
-            },
-
-            body: JSON.stringify({
-              paymentStatus: status,
-            }),
-          },
-        )
+        fetch(location.origin + "/api/orders/" + encodeURIComponent(orderId) + "/status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: status }),
+        })
           .then(function (response) {
             return response.json();
           })
 
           .then(function (data) {
             if (!data.success) {
-              throw new Error(
-                data.message || "Unable to update payment status.",
-              );
+              throw new Error(data.message || "Unable to update order status.");
             }
-
-            alert(
-              status === "Paid"
-                ? "✅ Payment accepted successfully."
-                : "❌ Payment rejected.",
-            );
 
             loadOrders();
           })
 
           .catch(function (error) {
-            console.error("Payment status error:", error);
+            console.error("Status update error:", error);
 
-            alert("Unable to update payment status.\n\n" + error.message);
+            alert("Unable to update order status.\n\n" + error.message);
           });
       }
 
       /* =====================================================
-         INITIAL LOAD
+         NEW ORDER SOUND
       ===================================================== */
 
-      document.addEventListener("DOMContentLoaded", function () {
-        loadOrders();
-      });
+      function beep() {
+        try {
+          const audio = new (window.AudioContext || window.webkitAudioContext)();
+
+          const oscillator = audio.createOscillator();
+
+          oscillator.frequency.value = 880;
+
+          oscillator.connect(audio.destination);
+
+          oscillator.start();
+
+          oscillator.stop(audio.currentTime + 0.4);
+        } catch (error) {
+          /* Sound is optional. */
+        }
+      }
 
       /* =====================================================
-         AUTO REFRESH
-         
-         Every 5 seconds.
+         INITIAL LOAD + AUTO REFRESH (every 5 seconds)
       ===================================================== */
+
+      document.addEventListener("DOMContentLoaded", loadOrders);
 
       setInterval(loadOrders, 5000);
     </script>

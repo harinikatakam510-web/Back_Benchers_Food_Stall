@@ -411,6 +411,25 @@
            GET CART
         ========================================== */
 
+        /* Cart handed over from the old website (?cart=...).
+           Prices are re-checked by the server anyway. */
+
+        const handedOverCart = new URLSearchParams(location.search).get("cart");
+
+        if (handedOverCart) {
+          try {
+            const items = JSON.parse(handedOverCart);
+
+            if (Array.isArray(items)) {
+              localStorage.setItem("cart", JSON.stringify(items));
+            }
+          } catch (error) {
+            console.error("Could not read handed-over cart:", error);
+          }
+
+          history.replaceState(null, "", location.pathname);
+        }
+
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
         const checkoutItems = document.getElementById("checkout-items");
@@ -578,7 +597,7 @@
                  CREATE RAZORPAY ORDER
               ==================================== */
 
-            const orderResponse = await fetch("/api/create-razorpay-order", {
+            const orderResponse = await fetch("/api/create-order", {
               method: "POST",
 
               headers: {
@@ -604,12 +623,20 @@
               );
             }
 
+            /* The server prices the cart itself — show its total. */
+
+            total = Number(orderResult.total);
+
+            grandTotal.textContent = "₹" + total.toFixed(2);
+
+            razorpayAmount.textContent = "₹" + total.toFixed(2);
+
             /* ====================================
                  RAZORPAY OPTIONS
               ==================================== */
 
             const options = {
-              key: orderResult.keyId,
+              key: orderResult.key,
 
               amount: orderResult.amount,
 
@@ -619,7 +646,7 @@
 
               description: "Food Stall Order",
 
-              order_id: orderResult.razorpayOrderId,
+              order_id: orderResult.orderId,
 
               prefill: {
                 name: name,
@@ -666,8 +693,46 @@
 
             const razorpay = new Razorpay(options);
 
-            razorpay.on("payment.failed", function (response) {
+            razorpay.on("payment.failed", async function (response) {
               console.error("Payment Failed:", response);
+
+              /* If this website has just been replaced by the new one,
+                 continue there with the same cart. */
+
+              const failedPaymentId =
+                response.error &&
+                response.error.metadata &&
+                response.error.metadata.payment_id;
+
+              if (failedPaymentId) {
+                try {
+                  const check = await fetch("/api/payment-failed", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ razorpay_payment_id: failedPaymentId }),
+                  }).then(function (r) {
+                    return r.json();
+                  });
+
+                  if (check.redirect) {
+                    razorpay.close();
+
+                    alert(
+                      "We've moved to a new payment page.\n\n" +
+                        "No money was taken. Taking you there with your cart…",
+                    );
+
+                    window.location.href =
+                      check.redirect +
+                      "/checkout?cart=" +
+                      encodeURIComponent(JSON.stringify(cart));
+
+                    return;
+                  }
+                } catch (error) {
+                  console.error("Switch check failed:", error);
+                }
+              }
 
               alert(
                 "Payment failed.\n\n" +
@@ -714,7 +779,7 @@
           try {
             processingMessage.textContent = "⏳ Verifying payment...";
 
-            const verifyResponse = await fetch("/api/verify-razorpay-payment", {
+            const verifyResponse = await fetch("/place-order", {
               method: "POST",
 
               headers: {

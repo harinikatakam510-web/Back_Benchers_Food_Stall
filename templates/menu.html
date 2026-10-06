@@ -187,7 +187,7 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong id="chips-price">₹49</strong>
+              <strong id="chips-price">₹{{ price("Chips Mix Loaded", "Veg Loaded", "Mini") }}</strong>
             </div>
 
             <button
@@ -234,7 +234,7 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong id="bun-price">₹49</strong>
+              <strong id="bun-price">₹{{ price("Masaka Bun", "Masaka Bun") }}</strong>
             </div>
 
             <button
@@ -278,7 +278,7 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong id="veg-fries-price">₹59</strong>
+              <strong id="veg-fries-price">₹{{ price("Veg Loaded French Fries", "", "Mini") }}</strong>
             </div>
 
             <button
@@ -322,7 +322,7 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong id="nonveg-fries-price">₹69</strong>
+              <strong id="nonveg-fries-price">₹{{ price("Non Veg Loaded French Fries", "", "Mini") }}</strong>
             </div>
 
             <button
@@ -371,7 +371,7 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong id="golisoda-price">₹30</strong>
+              <strong id="golisoda-price">₹{{ price("Golisoda", "Blueberry") }}</strong>
             </div>
 
             <button class="add-cart-btn" type="button" data-product="Golisoda">
@@ -419,7 +419,7 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong id="burger-price">₹49</strong>
+              <strong id="burger-price">₹{{ price("Back Benchers Burger", "Veg Burger", "Mini") }}</strong>
             </div>
 
             <button
@@ -456,14 +456,13 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong>₹49</strong>
+              <strong>₹{{ price("Bangalore Special Sweet") }}</strong>
             </div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Bangalore Special Sweet"
-              data-price="49"
             >
               ADD TO CART 🛒
             </button>
@@ -494,14 +493,13 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong>₹89</strong>
+              <strong>₹{{ price("Black Forest") }}</strong>
             </div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Black Forest"
-              data-price="89"
             >
               ADD TO CART 🛒
             </button>
@@ -532,14 +530,13 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong>₹99</strong>
+              <strong>₹{{ price("Kaju Chicken Fry") }}</strong>
             </div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Kaju Chicken Fry"
-              data-price="99"
             >
               ADD TO CART 🛒
             </button>
@@ -570,14 +567,13 @@
 
             <div class="price-display">
               <span>Price</span>
-              <strong>₹89</strong>
+              <strong>₹{{ price("Chocolate Cake") }}</strong>
             </div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Chocolate Cake"
-              data-price="89"
             >
               ADD TO CART 🛒
             </button>
@@ -617,13 +613,12 @@
           <div class="combo-info">
             <p class="description">Samosa + Soft Drink</p>
 
-            <div class="combo-price">₹25</div>
+            <div class="combo-price">₹{{ price("Drink + Samosa Combo") }}</div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Drink + Samosa Combo"
-              data-price="25"
             >
               ADD TO CART 🛒
             </button>
@@ -662,13 +657,12 @@
           <div class="combo-info">
             <p class="description">Any Cake + Samosa + Soft Drink</p>
 
-            <div class="combo-price">₹149</div>
+            <div class="combo-price">₹{{ price("Cake + Samosa + Soft Drink Combo") }}</div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Cake + Samosa + Soft Drink Combo"
-              data-price="149"
             >
               ADD TO CART 🛒
             </button>
@@ -708,13 +702,12 @@
               Kaju Chicken Fry + Soft Drink + Chaco Chaco
             </p>
 
-            <div class="combo-price">₹179</div>
+            <div class="combo-price">₹{{ price("Kaju Chicken Fry + Drink + Chaco Chaco Combo") }}</div>
 
             <button
               class="add-cart-btn"
               type="button"
               data-product="Kaju Chicken Fry + Drink + Chaco Chaco Combo"
-              data-price="179"
             >
               ADD TO CART 🛒
             </button>
@@ -750,6 +743,12 @@
     <!-- =========================================================
          MAIN JAVASCRIPT
          ========================================================= -->
+
+    <!-- Prices come from MENU in app.py -->
+    <script>
+      window.MENU_PRICES = {{ menu_prices | tojson }};
+      window.MAX_QUANTITY = {{ max_quantity }};
+    </script>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>

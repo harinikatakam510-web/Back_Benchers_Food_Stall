@@ -1,0 +1,8 @@
+# Secrets — never commit these
+.env
+
+# Local files
+venv/
+__pycache__/
+*.pyc
+database.db
