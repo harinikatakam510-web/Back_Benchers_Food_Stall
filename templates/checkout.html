@@ -11,6 +11,9 @@
       href="{{ url_for('static', filename='css/style.css') }}"
     />
 
+    <!-- Razorpay Checkout -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <style>
       .checkout-page {
         width: 90%;
@@ -67,6 +70,7 @@
 
       .form-group input {
         width: 100%;
+        box-sizing: border-box;
         padding: 14px;
         border-radius: 10px;
         border: 1px solid #444;
@@ -102,7 +106,7 @@
       .checkout-item-details {
         color: #aaa;
         font-size: 14px;
-        margin-top: 4px;
+        margin-top: 5px;
       }
 
       .checkout-item-price {
@@ -126,13 +130,13 @@
         color: #ff9d00;
       }
 
-      /* UPI */
+      /* PAYMENT */
 
       .payment-box {
         text-align: center;
       }
 
-      .upi-badge {
+      .razorpay-badge {
         display: inline-block;
         padding: 12px 28px;
         border: 2px solid #ff9d00;
@@ -168,7 +172,7 @@
         font-size: 32px;
       }
 
-      .upi-details {
+      .payment-info {
         margin-top: 20px;
         padding: 20px;
         background: #33250f;
@@ -178,81 +182,11 @@
         line-height: 1.8;
       }
 
-      .upi-id {
-        color: #ff9d00;
-        font-size: 22px;
-        font-weight: bold;
-        word-break: break-all;
-      }
-
-      .upi-name {
+      .payment-info strong {
         color: white;
-        font-size: 18px;
-        font-weight: bold;
       }
 
-      .copy-btn {
-        margin-top: 12px;
-        padding: 10px 20px;
-        border: 1px solid #ff9d00;
-        border-radius: 20px;
-        background: transparent;
-        color: #ff9d00;
-        cursor: pointer;
-        font-weight: bold;
-      }
-
-      .copy-btn:hover {
-        background: #ff9d00;
-        color: #111;
-      }
-
-      .steps {
-        text-align: left;
-        margin-top: 20px;
-        color: #ccc;
-      }
-
-      .steps p {
-        margin: 8px 0;
-      }
-
-      /* UTR */
-
-      .utr-group {
-        margin-top: 25px;
-        text-align: left;
-      }
-
-      .utr-group label {
-        display: block;
-        color: white;
-        font-weight: bold;
-        margin-bottom: 8px;
-      }
-
-      .utr-group input {
-        width: 100%;
-        padding: 14px;
-        border-radius: 10px;
-        border: 1px solid #444;
-        background: #292929;
-        color: white;
-        font-size: 16px;
-        outline: none;
-      }
-
-      .utr-group input:focus {
-        border-color: #ff9d00;
-      }
-
-      .utr-note {
-        color: #999;
-        font-size: 13px;
-        margin-top: 7px;
-      }
-
-      /* PLACE ORDER */
+      /* PAY BUTTON */
 
       .place-order-btn {
         width: 100%;
@@ -296,6 +230,16 @@
         padding: 20px;
       }
 
+      /* PROCESSING */
+
+      .processing-message {
+        display: none;
+        margin-top: 20px;
+        color: #ff9d00;
+        font-weight: bold;
+        text-align: center;
+      }
+
       @media (max-width: 600px) {
         .checkout-header h1 {
           font-size: 40px;
@@ -311,10 +255,6 @@
 
         .checkout-item {
           gap: 10px;
-        }
-
-        .upi-id {
-          font-size: 18px;
         }
       }
     </style>
@@ -353,7 +293,7 @@
 
         <h1>Checkout</h1>
 
-        <span> Review your order, pay using UPI and submit your UTR. </span>
+        <span> Review your order and pay securely using Razorpay. </span>
       </section>
 
       <!-- ORDER SUMMARY -->
@@ -400,79 +340,54 @@
         </div>
       </section>
 
-      <!-- DIRECT UPI PAYMENT -->
+      <!-- RAZORPAY PAYMENT -->
 
       <section class="checkout-box payment-box">
-        <h2>📱 Pay Using UPI</h2>
+        <h2>💳 Secure Payment</h2>
 
-        <div class="upi-badge">📱 UPI PAYMENT ONLY</div>
+        <div class="razorpay-badge">💳 PAY USING RAZORPAY</div>
 
         <p class="payment-description">
-          Pay the exact amount to the UPI ID below.
+          Click the button below to securely pay your complete order amount.
 
           <br />
 
-          After payment, enter the <strong>UTR / Transaction ID</strong>
-          to submit your order.
+          You can use the payment methods available in Razorpay Checkout.
         </p>
 
-        <!-- AMOUNT -->
+        <!-- PAYMENT AMOUNT -->
 
         <div class="payment-amount">
           <span> Amount to Pay </span>
 
-          <strong id="upi-amount"> ₹0 </strong>
+          <strong id="razorpay-amount"> ₹0 </strong>
         </div>
 
-        <!-- UPI DETAILS -->
+        <div class="payment-info">
+          <strong>🔒 Secure Payment</strong>
 
-        <div class="upi-details">
-          <div>Pay to:</div>
+          <br />
 
-          <div class="upi-name">Back Benchers Food Stall</div>
+          Your payment is processed securely through Razorpay.
 
-          <div class="upi-id" id="upi-id">8374857347@axl</div>
+          <br />
 
-          <button type="button" class="copy-btn" onclick="copyUPI()">
-            📋 COPY UPI ID
-          </button>
-
-          <div class="steps">
-            <p>1️⃣ Open Google Pay / PhonePe / Paytm / any UPI app.</p>
-
-            <p>2️⃣ Send the exact amount shown above.</p>
-
-            <p>3️⃣ After successful payment, copy the UTR / Transaction ID.</p>
-
-            <p>4️⃣ Enter the UTR below and place your order.</p>
-          </div>
-        </div>
-
-        <!-- UTR -->
-
-        <div class="utr-group">
-          <label for="utr"> 🔐 UTR / Transaction ID </label>
-
-          <input
-            type="text"
-            id="utr"
-            placeholder="Enter UTR / Transaction ID"
-            autocomplete="off"
-          />
-
-          <div class="utr-note">
-            You can find the UTR / Transaction ID in your UPI payment
-            transaction details.
-          </div>
+          <span>
+            Do not refresh or close the page while payment is being processed.
+          </span>
         </div>
       </section>
 
-      <!-- PLACE ORDER -->
+      <!-- PAY -->
 
       <section class="checkout-box">
         <button type="button" id="place-order-btn" class="place-order-btn">
-          ✅ PAYMENT DONE — PLACE ORDER
+          💳 PROCEED TO PAY ₹0
         </button>
+
+        <div id="processing-message" class="processing-message">
+          ⏳ Processing payment...
+        </div>
 
         <a href="/cart" class="back-cart-btn"> ← Back to Cart </a>
       </section>
@@ -493,8 +408,8 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         /* ==========================================
-     GET CART
-  ========================================== */
+           GET CART
+        ========================================== */
 
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -502,31 +417,34 @@
 
         const grandTotal = document.getElementById("checkout-grand-total");
 
-        const upiAmount = document.getElementById("upi-amount");
+        const razorpayAmount = document.getElementById("razorpay-amount");
 
         const placeOrderBtn = document.getElementById("place-order-btn");
 
-        const utrInput = document.getElementById("utr");
+        const processingMessage = document.getElementById("processing-message");
 
         /* ==========================================
-     CHECK EMPTY CART
-  ========================================== */
+           CHECK EMPTY CART
+        ========================================== */
 
         if (cart.length === 0) {
           checkoutItems.innerHTML = `
-      <div class="empty-checkout">
 
-        Your cart is empty.
+            <div class="empty-checkout">
 
-        <br><br>
+              Your cart is empty.
 
-        Please add items from the menu.
+              <br><br>
 
-      </div>
-    `;
+              Please add items from the menu.
+
+            </div>
+
+          `;
 
           grandTotal.textContent = "₹0";
-          upiAmount.textContent = "₹0";
+
+          razorpayAmount.textContent = "₹0";
 
           placeOrderBtn.disabled = true;
 
@@ -534,8 +452,8 @@
         }
 
         /* ==========================================
-     DISPLAY CART
-  ========================================== */
+           DISPLAY CART
+        ========================================== */
 
         let total = 0;
 
@@ -568,45 +486,49 @@
 
           div.innerHTML = `
 
-      <div>
+            <div>
 
-        <strong>
-          ${escapeHTML(item.name || "Food Item")}
-        </strong>
+              <strong>
+                ${escapeHTML(item.name || "Food Item")}
+              </strong>
 
-        <div class="checkout-item-details">
+              <div class="checkout-item-details">
 
-          ${optionText ? escapeHTML(optionText) + " • " : ""}
+                ${optionText ? escapeHTML(optionText) + " • " : ""}
 
-          Qty: ${quantity}
+                Qty: ${quantity}
 
-        </div>
+              </div>
 
-      </div>
+            </div>
 
 
-      <div class="checkout-item-price">
+            <div class="checkout-item-price">
 
-        ₹${itemTotal.toFixed(2)}
+              ₹${itemTotal.toFixed(2)}
 
-      </div>
+            </div>
 
-    `;
+          `;
 
           checkoutItems.appendChild(div);
         });
 
         /* ==========================================
-     DISPLAY TOTAL
-  ========================================== */
+           DISPLAY TOTAL
+        ========================================== */
+
+        total = Number(total.toFixed(2));
 
         grandTotal.textContent = "₹" + total.toFixed(2);
 
-        upiAmount.textContent = "₹" + total.toFixed(2);
+        razorpayAmount.textContent = "₹" + total.toFixed(2);
+
+        placeOrderBtn.textContent = "💳 PROCEED TO PAY ₹" + total.toFixed(2);
 
         /* ==========================================
-     PLACE ORDER
-  ========================================== */
+           PAYMENT BUTTON
+        ========================================== */
 
         placeOrderBtn.addEventListener("click", async function () {
           /* CUSTOMER NAME */
@@ -617,79 +539,46 @@
 
           const phone = document.getElementById("customer-phone").value.trim();
 
-          /* UTR */
-
-          const utr = utrInput.value.trim();
-
           /* ======================================
-         VALIDATE NAME
-      ====================================== */
+               VALIDATE NAME
+            ====================================== */
 
           if (!name) {
             alert("Please enter your name.");
 
+            document.getElementById("customer-name").focus();
+
             return;
           }
 
           /* ======================================
-         VALIDATE PHONE
-      ====================================== */
+               VALIDATE PHONE
+            ====================================== */
 
           if (!/^[0-9]{10}$/.test(phone)) {
             alert("Please enter a valid 10-digit mobile number.");
 
-            return;
-          }
-
-          /* ======================================
-         VALIDATE UTR
-      ====================================== */
-
-          if (!utr) {
-            alert("Please enter the UTR / Transaction ID.");
-
-            utrInput.focus();
-
-            return;
-          }
-
-          if (utr.length < 6) {
-            alert("Please enter a valid UTR / Transaction ID.");
-
-            utrInput.focus();
+            document.getElementById("customer-phone").focus();
 
             return;
           }
 
           /* ======================================
-         CONFIRM PAYMENT
-      ====================================== */
-
-          const confirmPayment = confirm(
-            "Have you completed the UPI payment of ₹" +
-              total.toFixed(2) +
-              "?\n\n" +
-              "Click OK only after completing the payment.",
-          );
-
-          if (!confirmPayment) {
-            return;
-          }
-
-          /* ======================================
-         DISABLE BUTTON
-      ====================================== */
+               DISABLE BUTTON
+            ====================================== */
 
           placeOrderBtn.disabled = true;
 
-          placeOrderBtn.textContent = "SUBMITTING ORDER... ⏳";
+          placeOrderBtn.textContent = "CREATING PAYMENT... ⏳";
+
+          processingMessage.style.display = "block";
 
           try {
             /* ====================================
-           SEND ORDER TO FLASK
-        ==================================== */
+                 CREATE RAZORPAY ORDER
+              ==================================== */
 
-            const response = await fetch("/place-order", {
+            const orderResponse = await fetch("/api/create-razorpay-order", {
               method: "POST",
 
               headers: {
@@ -701,9 +590,149 @@
 
                 phone: phone,
 
-                table: "Pre-Booking",
+                items: cart,
 
-                utr: utr,
+                total: total,
+              }),
+            });
+
+            const orderResult = await orderResponse.json();
+
+            if (!orderResponse.ok || !orderResult.success) {
+              throw new Error(
+                orderResult.message || "Unable to create Razorpay order.",
+              );
+            }
+
+            /* ====================================
+                 RAZORPAY OPTIONS
+              ==================================== */
+
+            const options = {
+              key: orderResult.keyId,
+
+              amount: orderResult.amount,
+
+              currency: "INR",
+
+              name: "Back Benchers Food Stall",
+
+              description: "Food Stall Order",
+
+              order_id: orderResult.razorpayOrderId,
+
+              prefill: {
+                name: name,
+
+                contact: "+91" + phone,
+              },
+
+              notes: {
+                customerName: name,
+
+                phone: phone,
+              },
+
+              theme: {
+                color: "#ff9d00",
+              },
+
+              handler: async function (response) {
+                await verifyPayment(
+                  response,
+                  orderResult.orderId,
+                  name,
+                  phone,
+                  cart,
+                  total,
+                );
+              },
+
+              modal: {
+                ondismiss: function () {
+                  placeOrderBtn.disabled = false;
+
+                  placeOrderBtn.textContent =
+                    "💳 PROCEED TO PAY ₹" + total.toFixed(2);
+
+                  processingMessage.style.display = "none";
+                },
+              },
+            };
+
+            /* ====================================
+                 OPEN RAZORPAY
+              ==================================== */
+
+            const razorpay = new Razorpay(options);
+
+            razorpay.on("payment.failed", function (response) {
+              console.error("Payment Failed:", response);
+
+              alert(
+                "Payment failed.\n\n" +
+                  (response.error && response.error.description
+                    ? response.error.description
+                    : "Please try again."),
+              );
+
+              placeOrderBtn.disabled = false;
+
+              placeOrderBtn.textContent =
+                "💳 PROCEED TO PAY ₹" + total.toFixed(2);
+
+              processingMessage.style.display = "none";
+            });
+
+            razorpay.open();
+          } catch (error) {
+            console.error("Razorpay Error:", error);
+
+            alert("Unable to start payment.\n\n" + error.message);
+
+            placeOrderBtn.disabled = false;
+
+            placeOrderBtn.textContent =
+              "💳 PROCEED TO PAY ₹" + total.toFixed(2);
+
+            processingMessage.style.display = "none";
+          }
+        });
+
+        /* ==========================================
+           VERIFY PAYMENT
+        ========================================== */
+
+        async function verifyPayment(
+          razorpayResponse,
+          orderId,
+          name,
+          phone,
+          cart,
+          total,
+        ) {
+          try {
+            processingMessage.textContent = "⏳ Verifying payment...";
+
+            const verifyResponse = await fetch("/api/verify-razorpay-payment", {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                orderId: orderId,
+
+                razorpay_order_id: razorpayResponse.razorpay_order_id,
+
+                razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+
+                razorpay_signature: razorpayResponse.razorpay_signature,
+
+                customerName: name,
+
+                phone: phone,
 
                 items: cart,
 
@@ -711,89 +740,51 @@
               }),
             });
 
-            /* ====================================
-           READ RESPONSE
-        ==================================== */
+            const result = await verifyResponse.json();
 
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-              throw new Error(result.message || "Unable to place order.");
+            if (!verifyResponse.ok || !result.success) {
+              throw new Error(result.message || "Payment verification failed.");
             }
 
             /* ====================================
-           SAVE LAST ORDER
-        ==================================== */
+               SAVE ORDER
+            ==================================== */
 
-            const finalOrder = result.order || {
-              orderId: result.orderId,
-
-              customerName: name,
-
-              phone: phone,
-
-              table: "Pre-Booking",
-
-              payment: "Direct UPI",
-
-              paymentStatus: "Verification Pending",
-
-              utr: utr,
-
-              items: cart,
-
-              total: total,
-
-              date: new Date().toLocaleString(),
-
-              status: "New",
-            };
-
-            localStorage.setItem("lastOrder", JSON.stringify(finalOrder));
+            localStorage.setItem("lastOrder", JSON.stringify(result.order));
 
             /* ====================================
-           CLEAR CART
-        ==================================== */
+               CLEAR CART
+            ==================================== */
 
             localStorage.removeItem("cart");
 
             /* ====================================
-           GO TO SUCCESS PAGE
-        ==================================== */
+               SUCCESS PAGE
+            ==================================== */
 
             window.location.href = "/success";
           } catch (error) {
-            console.error("Order Error:", error);
+            console.error("Payment Verification Error:", error);
 
-            alert("Unable to place order.\n\n" + error.message);
+            alert(
+              "Payment was completed, but verification failed.\n\n" +
+                "Please contact the food stall with your Razorpay Payment ID:\n" +
+                razorpayResponse.razorpay_payment_id,
+            );
 
             placeOrderBtn.disabled = false;
 
-            placeOrderBtn.textContent = "✅ PAYMENT DONE — PLACE ORDER";
+            placeOrderBtn.textContent =
+              "💳 PROCEED TO PAY ₹" + total.toFixed(2);
+
+            processingMessage.style.display = "none";
           }
-        });
+        }
       });
 
       /* ==========================================
-   COPY UPI ID
-========================================== */
-
-      function copyUPI() {
-        const upi = document.getElementById("upi-id").textContent.trim();
-
-        navigator.clipboard
-          .writeText(upi)
-          .then(function () {
-            alert("UPI ID copied successfully:\n" + upi);
-          })
-          .catch(function () {
-            alert("UPI ID: " + upi);
-          });
-      }
-
-      /* ==========================================
-   BASIC HTML ESCAPE
-========================================== */
+         HTML ESCAPE
+      ========================================== */
 
       function escapeHTML(value) {
         return String(value)
