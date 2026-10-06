@@ -4,7 +4,6 @@ import uuid
 import os
 import razorpay
 
-
 # ============================================================
 # FLASK APP
 # ============================================================
@@ -14,15 +13,6 @@ app = Flask(__name__)
 
 # ============================================================
 # RAZORPAY CONFIGURATION
-#
-# IMPORTANT:
-# Do NOT put the actual Key ID / Secret directly in this file.
-#
-# Render Environment Variables:
-#
-# RAZORPAY_KEY_ID
-# RAZORPAY_KEY_SECRET
-#
 # ============================================================
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
@@ -36,7 +26,6 @@ RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 razorpay_client = None
 
 if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
-
     razorpay_client = razorpay.Client(
         auth=(
             RAZORPAY_KEY_ID,
@@ -47,21 +36,13 @@ if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
 
 # ============================================================
 # TEMPORARY ORDER STORAGE
-#
-# IMPORTANT:
-# Orders will disappear when Flask restarts.
-#
-# For your current college/demo project this is okay.
 # ============================================================
 
 orders = []
 
 
 # ============================================================
-# YOUR UPI DETAILS
-#
-# These are kept only as business information.
-# Razorpay will handle the actual payment.
+# BUSINESS DETAILS
 # ============================================================
 
 UPI_ID = "8374857347@axl"
@@ -74,7 +55,6 @@ UPI_NAME = "Back Benchers Food Stall"
 
 @app.route("/")
 def home():
-
     return render_template("index.html")
 
 
@@ -84,7 +64,6 @@ def home():
 
 @app.route("/menu")
 def menu():
-
     return render_template("menu.html")
 
 
@@ -94,7 +73,6 @@ def menu():
 
 @app.route("/cart")
 def cart():
-
     return render_template("cart.html")
 
 
@@ -104,7 +82,6 @@ def cart():
 
 @app.route("/checkout")
 def checkout():
-
     return render_template("checkout.html")
 
 
@@ -114,30 +91,31 @@ def checkout():
 
 @app.route("/success")
 def success():
-
     return render_template("success.html")
 
 
 # ============================================================
 # CREATE RAZORPAY ORDER
 #
-# FLOW:
+# Frontend:
 #
-# Customer
-#    ↓
-# Checkout
-#    ↓
-# Click "PROCEED TO PAY"
-#    ↓
-# Frontend calls /create-order
-#    ↓
-# Flask creates Razorpay Order
-#    ↓
-# Razorpay Checkout opens
+# POST /create-order
 #
+# OR
+#
+# POST /api/create-order
+#
+# Both are supported.
 # ============================================================
 
-@app.route("/create-order", methods=["POST"])
+@app.route(
+    "/create-order",
+    methods=["POST"]
+)
+@app.route(
+    "/api/create-order",
+    methods=["POST"]
+)
 def create_order():
 
     try:
@@ -146,38 +124,44 @@ def create_order():
         # CHECK RAZORPAY CONFIGURATION
         # ----------------------------------------------------
 
+        if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
+
+            print("❌ Razorpay environment variables missing.")
+
+            return jsonify({
+                "success": False,
+                "message": (
+                    "Razorpay is not configured. "
+                    "Please add RAZORPAY_KEY_ID and "
+                    "RAZORPAY_KEY_SECRET in Render Environment Variables."
+                )
+            }), 500
+
+
         if razorpay_client is None:
 
             return jsonify({
-
                 "success": False,
-
-                "message":
-                    "Razorpay is not configured on the server."
-
+                "message": "Razorpay client could not be initialized."
             }), 500
 
 
         # ----------------------------------------------------
-        # GET REQUEST DATA
+        # GET JSON
         # ----------------------------------------------------
 
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
         if not data:
 
             return jsonify({
-
                 "success": False,
-
-                "message":
-                    "No payment data received."
-
+                "message": "No payment data received."
             }), 400
 
 
         # ----------------------------------------------------
-        # GET AMOUNT
+        # GET TOTAL
         # ----------------------------------------------------
 
         try:
@@ -189,49 +173,28 @@ def create_order():
         except (TypeError, ValueError):
 
             return jsonify({
-
                 "success": False,
-
-                "message":
-                    "Invalid order amount."
-
+                "message": "Invalid order amount."
             }), 400
 
 
         # ----------------------------------------------------
-        # VALIDATE AMOUNT
+        # VALIDATE TOTAL
         # ----------------------------------------------------
 
         if total <= 0:
 
             return jsonify({
-
                 "success": False,
-
-                "message":
-                    "Order amount must be greater than ₹0."
-
+                "message": "Order amount must be greater than ₹0."
             }), 400
 
-
-        # ----------------------------------------------------
-        # ROUND TOTAL
-        # ----------------------------------------------------
 
         total = round(total, 2)
 
 
         # ----------------------------------------------------
         # CONVERT RUPEES TO PAISE
-        #
-        # Razorpay accepts amount in paise.
-        #
-        # Example:
-        #
-        # ₹100
-        # ↓
-        # 10000 paise
-        #
         # ----------------------------------------------------
 
         amount_in_paise = int(
@@ -239,8 +202,16 @@ def create_order():
         )
 
 
+        if amount_in_paise < 100:
+
+            return jsonify({
+                "success": False,
+                "message": "Minimum Razorpay amount is ₹1."
+            }), 400
+
+
         # ----------------------------------------------------
-        # GENERATE RECEIPT
+        # RECEIPT
         # ----------------------------------------------------
 
         receipt_id = (
@@ -255,28 +226,47 @@ def create_order():
 
         razorpay_order = razorpay_client.order.create({
 
-            "amount":
-                amount_in_paise,
+            "amount": amount_in_paise,
 
-            "currency":
-                "INR",
+            "currency": "INR",
 
-            "receipt":
-                receipt_id,
+            "receipt": receipt_id,
 
             "notes": {
-
-                "stall":
-                    "Back Benchers Food Stall"
-
+                "stall": "Back Benchers Food Stall"
             }
 
         })
 
 
         # ----------------------------------------------------
-        # LOG
+        # SAVE BASIC PAYMENT SESSION
         # ----------------------------------------------------
+
+        payment_record = {
+
+            "razorpayOrderId":
+                razorpay_order["id"],
+
+            "amount":
+                total,
+
+            "amountPaise":
+                amount_in_paise,
+
+            "receipt":
+                receipt_id,
+
+            "createdAt":
+                datetime.now().strftime(
+                    "%d-%m-%Y %I:%M %p"
+                )
+
+        }
+
+
+        # We don't append this as a completed order.
+        # It is only useful for debugging.
 
         print()
         print("==============================================")
@@ -294,6 +284,11 @@ def create_order():
         )
 
         print(
+            "Amount in Paise:",
+            amount_in_paise
+        )
+
+        print(
             "Receipt:",
             receipt_id
         )
@@ -303,13 +298,12 @@ def create_order():
 
 
         # ----------------------------------------------------
-        # RESPONSE TO FRONTEND
+        # SEND DATA TO FRONTEND
         # ----------------------------------------------------
 
         return jsonify({
 
-            "success":
-                True,
+            "success": True,
 
             "message":
                 "Razorpay order created successfully.",
@@ -335,37 +329,46 @@ def create_order():
     except Exception as e:
 
         print()
+        print("==============================================")
         print("❌ RAZORPAY CREATE ORDER ERROR")
-        print(e)
+        print("==============================================")
+        print(type(e).__name__)
+        print(str(e))
+        print("==============================================")
         print()
+
+
+        # IMPORTANT:
+        # Always return JSON.
+        # This prevents:
+        #
+        # Unexpected token '<'
+        #
+        # in frontend.
 
         return jsonify({
 
-            "success":
-                False,
+            "success": False,
 
             "message":
-                "Unable to create Razorpay order."
+                "Unable to create Razorpay order.",
+
+            "error":
+                str(e)
 
         }), 500
 
 
 # ============================================================
-# PLACE ORDER / VERIFY RAZORPAY PAYMENT
+# PLACE ORDER
 #
-# This endpoint is called AFTER successful Razorpay payment.
-#
-# Razorpay sends:
-#
-# razorpay_payment_id
-# razorpay_order_id
-# razorpay_signature
-#
-# Server verifies the signature before accepting the order.
-#
+# Called AFTER successful Razorpay payment.
 # ============================================================
 
-@app.route("/place-order", methods=["POST"])
+@app.route(
+    "/place-order",
+    methods=["POST"]
+)
 def place_order():
 
     try:
@@ -387,10 +390,10 @@ def place_order():
 
 
         # ----------------------------------------------------
-        # GET JSON DATA
+        # GET JSON
         # ----------------------------------------------------
 
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
         if not data:
 
@@ -409,8 +412,12 @@ def place_order():
         # ----------------------------------------------------
 
         customer_name = str(
-            data.get("customerName", "")
+            data.get(
+                "customerName",
+                ""
+            )
         ).strip()
+
 
         if not customer_name:
 
@@ -429,8 +436,12 @@ def place_order():
         # ----------------------------------------------------
 
         phone = str(
-            data.get("phone", "")
+            data.get(
+                "phone",
+                ""
+            )
         ).strip()
+
 
         if not phone.isdigit() or len(phone) != 10:
 
@@ -449,8 +460,12 @@ def place_order():
         # ----------------------------------------------------
 
         table = str(
-            data.get("table", "Pre-Booking")
+            data.get(
+                "table",
+                "Pre-Booking"
+            )
         ).strip()
+
 
         if not table:
 
@@ -458,10 +473,14 @@ def place_order():
 
 
         # ----------------------------------------------------
-        # CART ITEMS
+        # ITEMS
         # ----------------------------------------------------
 
-        items = data.get("items", [])
+        items = data.get(
+            "items",
+            []
+        )
+
 
         if not isinstance(items, list) or not items:
 
@@ -482,7 +501,10 @@ def place_order():
         try:
 
             total = float(
-                data.get("total", 0)
+                data.get(
+                    "total",
+                    0
+                )
             )
 
         except (TypeError, ValueError):
@@ -509,7 +531,10 @@ def place_order():
             }), 400
 
 
-        total = round(total, 2)
+        total = round(
+            total,
+            2
+        )
 
 
         # ----------------------------------------------------
@@ -523,12 +548,14 @@ def place_order():
             )
         ).strip()
 
+
         razorpay_order_id = str(
             data.get(
                 "razorpay_order_id",
                 ""
             )
         ).strip()
+
 
         razorpay_signature = str(
             data.get(
@@ -579,9 +606,7 @@ def place_order():
 
 
         # ----------------------------------------------------
-        # VERIFY RAZORPAY SIGNATURE
-        #
-        # IMPORTANT SECURITY STEP
+        # VERIFY SIGNATURE
         # ----------------------------------------------------
 
         try:
@@ -603,7 +628,7 @@ def place_order():
         except razorpay.errors.SignatureVerificationError:
 
             print()
-            print("❌ RAZORPAY SIGNATURE VERIFICATION FAILED")
+            print("❌ SIGNATURE VERIFICATION FAILED")
             print(
                 "Payment ID:",
                 razorpay_payment_id
@@ -625,19 +650,22 @@ def place_order():
 
 
         # ----------------------------------------------------
-        # CHECK DUPLICATE PAYMENT
+        # DUPLICATE PAYMENT CHECK
         # ----------------------------------------------------
 
         for existing_order in orders:
 
-            if existing_order.get(
-                "razorpayPaymentId"
-            ) == razorpay_payment_id:
+            if (
+                existing_order.get(
+                    "razorpayPaymentId"
+                )
+                ==
+                razorpay_payment_id
+            ):
 
                 return jsonify({
 
-                    "success":
-                        False,
+                    "success": False,
 
                     "message":
                         "This payment has already been used."
@@ -650,10 +678,8 @@ def place_order():
         # ----------------------------------------------------
 
         order_id = (
-
             "BB"
             + uuid.uuid4().hex[:6].upper()
-
         )
 
 
@@ -662,10 +688,6 @@ def place_order():
         # ----------------------------------------------------
 
         order = {
-
-            # ------------------------------------------------
-            # ORDER INFORMATION
-            # ------------------------------------------------
 
             "orderId":
                 order_id,
@@ -690,10 +712,7 @@ def place_order():
                     "%d-%m-%Y %I:%M %p"
                 ),
 
-
-            # ------------------------------------------------
-            # PAYMENT INFORMATION
-            # ------------------------------------------------
+            # PAYMENT
 
             "payment":
                 "Razorpay",
@@ -710,10 +729,7 @@ def place_order():
             "razorpaySignature":
                 razorpay_signature,
 
-
-            # ------------------------------------------------
-            # ORDER STATUS
-            # ------------------------------------------------
+            # ORDER
 
             "status":
                 "Confirmed"
@@ -729,12 +745,12 @@ def place_order():
 
 
         # ----------------------------------------------------
-        # TERMINAL LOG
+        # TERMINAL
         # ----------------------------------------------------
 
         print()
         print("==============================================")
-        print("🔔 NEW PAID ORDER RECEIVED")
+        print("🔔 NEW PAID ORDER")
         print("==============================================")
 
         print(
@@ -753,17 +769,12 @@ def place_order():
         )
 
         print(
-            "Table:",
-            order["table"]
-        )
-
-        print(
             "Payment:",
             "RAZORPAY"
         )
 
         print(
-            "Razorpay Payment ID:",
+            "Payment ID:",
             order["razorpayPaymentId"]
         )
 
@@ -773,13 +784,13 @@ def place_order():
         )
 
         print(
-            "Payment Status:",
-            order["paymentStatus"]
+            "Amount: ₹",
+            order["total"]
         )
 
         print(
-            "Total: ₹",
-            order["total"]
+            "Status:",
+            "CONFIRMED"
         )
 
         print("----------------------------------------------")
@@ -796,16 +807,6 @@ def place_order():
                 "| ₹",
                 item.get("price")
             )
-
-        print("----------------------------------------------")
-
-        print(
-            "✅ PAYMENT VERIFIED"
-        )
-
-        print(
-            "✅ ORDER CONFIRMED"
-        )
 
         print("==============================================")
         print()
@@ -841,9 +842,14 @@ def place_order():
     except Exception as e:
 
         print()
-        print("❌ ORDER ERROR")
-        print(e)
+        print("==============================================")
+        print("❌ PLACE ORDER ERROR")
+        print("==============================================")
+        print(type(e).__name__)
+        print(str(e))
+        print("==============================================")
         print()
+
 
         return jsonify({
 
@@ -851,7 +857,10 @@ def place_order():
                 False,
 
             "message":
-                "Something went wrong while placing the order."
+                "Something went wrong while placing the order.",
+
+            "error":
+                str(e)
 
         }), 500
 
@@ -863,7 +872,9 @@ def place_order():
 @app.route("/admin")
 def admin():
 
-    return render_template("admin.html")
+    return render_template(
+        "admin.html"
+    )
 
 
 # ============================================================
@@ -886,15 +897,6 @@ def get_orders():
 
 # ============================================================
 # UPDATE ORDER STATUS
-#
-# Admin can change:
-#
-# Confirmed
-# Preparing
-# Ready
-# Completed
-# Cancelled
-#
 # ============================================================
 
 @app.route(
@@ -905,13 +907,17 @@ def update_order_status(order_id):
 
     try:
 
-        data = request.get_json()
+        data = request.get_json(
+            silent=True
+        )
+
 
         if not data:
 
             return jsonify({
 
-                "success": False,
+                "success":
+                    False,
 
                 "message":
                     "No status received."
@@ -920,7 +926,10 @@ def update_order_status(order_id):
 
 
         new_status = str(
-            data.get("status", "")
+            data.get(
+                "status",
+                ""
+            )
         ).strip()
 
 
@@ -980,7 +989,7 @@ def update_order_status(order_id):
 
 
         # ----------------------------------------------------
-        # ORDER NOT FOUND
+        # NOT FOUND
         # ----------------------------------------------------
 
         return jsonify({
@@ -998,8 +1007,9 @@ def update_order_status(order_id):
 
         print(
             "❌ Status Update Error:",
-            e
+            str(e)
         )
+
 
         return jsonify({
 
@@ -1007,7 +1017,10 @@ def update_order_status(order_id):
                 False,
 
             "message":
-                "Unable to update order status."
+                "Unable to update order status.",
+
+            "error":
+                str(e)
 
         }), 500
 
@@ -1039,10 +1052,75 @@ def health():
         "razorpay":
             razorpay_client is not None,
 
+        "razorpayKeyConfigured":
+            bool(RAZORPAY_KEY_ID),
+
+        "razorpaySecretConfigured":
+            bool(RAZORPAY_KEY_SECRET),
+
         "totalOrders":
             len(orders)
 
     })
+
+
+# ============================================================
+# ERROR HANDLERS
+#
+# VERY IMPORTANT
+#
+# If an endpoint fails, return JSON instead of HTML.
+# This prevents:
+#
+# Unexpected token '<'
+#
+# ============================================================
+
+@app.errorhandler(404)
+def page_not_found(error):
+
+    if request.path.startswith("/api/") or request.path in [
+        "/create-order",
+        "/place-order"
+    ]:
+
+        return jsonify({
+
+            "success":
+                False,
+
+            "message":
+                "API endpoint not found.",
+
+            "path":
+                request.path
+
+        }), 404
+
+
+    return error
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+
+    if request.path.startswith("/api/") or request.path in [
+        "/create-order",
+        "/place-order"
+    ]:
+
+        return jsonify({
+
+            "success":
+                False,
+
+            "message":
+                "Internal server error."
+
+        }), 500
+
+
+    return error
 
 
 # ============================================================
@@ -1080,16 +1158,22 @@ if __name__ == "__main__":
         UPI_NAME
     )
 
-    if razorpay_client:
+    print()
+
+    if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
 
         print(
-            "✅ Razorpay: ENABLED"
+            "✅ Razorpay configuration found."
         )
 
     else:
 
         print(
-            "❌ Razorpay: NOT CONFIGURED"
+            "❌ Razorpay configuration NOT found."
+        )
+
+        print(
+            "⚠️ Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET."
         )
 
     print()
