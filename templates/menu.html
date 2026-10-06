@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Menu | Back Benchers Food Stall</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- =========================================================
+         COMBO CARD SPECIAL STYLE
+         Normal food items are NOT affected.
+         Only combo cards use this style.
+         ========================================================= -->
+
+    <style>
+      /* =========================================================
+         COMBO CARD
+         ========================================================= */
+
+      .food-card.combo-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        padding: 25px;
+        gap: 15px;
+        box-sizing: border-box;
+      }
+
+      /* Combo name appears ABOVE image */
+      .combo-card .combo-name {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #222;
+      }
+
+      /* Combo image area */
+      .combo-card .combo-image {
+        width: 100%;
+        max-width: 700px;
+        height: auto !important;
+        max-height: none !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        display: block;
+        border-radius: 18px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Combo information BELOW image */
+      .combo-card .combo-info {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .combo-card .combo-info .description {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .combo-card .combo-price {
+        display: inline-block;
+        padding: 10px 25px;
+        border-radius: 12px;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #fff;
+        background: #e63946;
+      }
+
+      .combo-card .add-cart-btn {
+        width: min(500px, 100%);
+      }
+
+      /* Mobile */
+      @media (max-width: 768px) {
+        .food-card.combo-card {
+          padding: 15px;
+        }
+
+        .combo-card .combo-name {
+          font-size: 1.4rem;
+        }
+
+        .combo-card .combo-image {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .combo-card .combo-price {
+          font-size: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- =========================================================
+         NAVBAR
+         ========================================================= -->
+
+    <header class="navbar">
+      <div class="logo-area">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Back Benchers Logo"
+        />
+
+        <div>
+          <h2>BACK BENCHERS</h2>
+          <span>FOOD STALL</span>
+        </div>
+      </div>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/menu" class="active">Menu</a>
+        <a href="/cart">🛒 Cart</a>
+      </nav>
+    </header>
+
+    <!-- =========================================================
+         MENU HEADER
+         ========================================================= -->
+
+    <section class="menu-header">
+      <p>🍴 GOOD FOOD • GOOD FRIENDS • GREAT TIMES ❤️</p>
+
+      <h1>Our Menu</h1>
+
+      <span> Pick your favourite. Customize it. Enjoy it! 😋 </span>
+    </section>
+
+    <!-- =========================================================
+         MENU CONTAINER
+         ========================================================= -->
+
+    <main class="menu-container">
+      <!-- =======================================================
+           1. CHIPS MIX LOADED
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍟</span>
+          <h2>Chips Mix Loaded</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/chips.jpg') }}"
+            alt="Chips Mix Loaded"
+          />
+
+          <div class="food-info">
+            <h3>Chips Mix Loaded</h3>
+
+            <p class="description">Crispy • Cheesy • Loaded</p>
+
+            <label for="chips-type"> Choose Type </label>
+
+            <select id="chips-type">
+              <option value="Veg Loaded">🥬 Veg Loaded</option>
+
+              <option value="Non Veg Loaded">🍗 Non Veg Loaded</option>
+            </select>
+
+            <label for="chips-size"> Choose Size </label>
+
+            <select id="chips-size">
+              <option value="Mini">Mini</option>
+              <option value="Large">Large</option>
+            </select>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong id="chips-price">₹49</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Chips Mix Loaded"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           2. MASAKA BUN
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍞</span>
+          <h2>Masaka Bun</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/bun.jpg') }}"
+            alt="Masaka Bun"
+          />
+
+          <div class="food-info">
+            <h3>Masaka Bun</h3>
+
+            <p class="description">Soft • Sweet • Delicious</p>
+
+            <label for="bun-flavour"> Choose Flavour </label>
+
+            <select id="bun-flavour">
+              <option value="Masaka Bun">Masaka Bun</option>
+
+              <option value="Chocolate Masaka Bun">Chocolate Masaka Bun</option>
+
+              <option value="Mixed Flavour Bun">Mixed Flavour Bun</option>
+            </select>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong id="bun-price">₹49</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Masaka Bun"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           3. VEG FRENCH FRIES
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍟</span>
+          <h2>French Fries Bowl — Veg</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/fries.jpg') }}"
+            alt="Veg Loaded French Fries"
+          />
+
+          <div class="food-info">
+            <h3>Veg Loaded French Fries</h3>
+
+            <p class="description">Crispy • Cheesy • Yummy</p>
+
+            <label for="veg-fries-size"> Choose Size </label>
+
+            <select id="veg-fries-size">
+              <option value="Mini">Mini</option>
+              <option value="Large">Large</option>
+            </select>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong id="veg-fries-price">₹59</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Veg Loaded French Fries"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           4. NON VEG FRENCH FRIES
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍗</span>
+          <h2>French Fries Bowl — Non Veg</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/Non_Veg_Loaded_French_Fries.jpg') }}"
+            alt="Non Veg Loaded French Fries"
+          />
+
+          <div class="food-info">
+            <h3>Non Veg Loaded French Fries</h3>
+
+            <p class="description">Loaded • Meaty • Yummy</p>
+
+            <label for="nonveg-fries-size"> Choose Size </label>
+
+            <select id="nonveg-fries-size">
+              <option value="Mini">Mini</option>
+              <option value="Large">Large</option>
+            </select>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong id="nonveg-fries-price">₹69</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Non Veg Loaded French Fries"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           5. GOLISODA
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🥤</span>
+          <h2>Golisoda</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/golisoda.jpg') }}"
+            alt="Golisoda"
+          />
+
+          <div class="food-info">
+            <h3>Golisoda</h3>
+
+            <p class="description">Chilled • Refreshing • Fizzy</p>
+
+            <label for="golisoda-flavour"> Choose Flavour </label>
+
+            <select id="golisoda-flavour">
+              <option value="Blueberry">🫐 Blueberry</option>
+
+              <option value="Lemon">🍋 Lemon</option>
+
+              <option value="Orange">🍊 Orange</option>
+
+              <option value="Mango">🥭 Mango</option>
+            </select>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong id="golisoda-price">₹30</strong>
+            </div>
+
+            <button class="add-cart-btn" type="button" data-product="Golisoda">
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           6. BURGER
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍔</span>
+          <h2>Burger</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/burger.jpg') }}"
+            alt="Back Benchers Burger"
+          />
+
+          <div class="food-info">
+            <h3>Back Benchers Burger</h3>
+
+            <p class="description">Juicy • Cheesy • Delicious</p>
+
+            <label for="burger-type"> Choose Type </label>
+
+            <select id="burger-type">
+              <option value="Veg Burger">🥬 Veg Burger</option>
+
+              <option value="Non Veg Burger">🍗 Non Veg Burger</option>
+            </select>
+
+            <label for="burger-size"> Choose Size </label>
+
+            <select id="burger-size">
+              <option value="Mini">Mini</option>
+              <option value="Large">Large</option>
+            </select>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong id="burger-price">₹49</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Back Benchers Burger"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           7. BANGALORE SPECIAL SWEET
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍯</span>
+          <h2>Bangalore Special Sweet</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/01_bangalore_special_sweet.png') }}"
+            alt="Bangalore Special Sweet"
+          />
+
+          <div class="food-info">
+            <h3>Bangalore Special Sweet</h3>
+
+            <p class="description">Sweet • Rich • Delicious</p>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong>₹49</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Bangalore Special Sweet"
+              data-price="49"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           8. BLACK FOREST
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍰</span>
+          <h2>Black Forest</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/02_black_forest.png') }}"
+            alt="Black Forest Cake"
+          />
+
+          <div class="food-info">
+            <h3>Black Forest</h3>
+
+            <p class="description">Chocolate • Creamy • Rich</p>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong>₹89</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Black Forest"
+              data-price="89"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           9. KAJU CHICKEN FRY
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍗</span>
+          <h2>Kaju Chicken Fry</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/03_kaju_chicken_fry.png') }}"
+            alt="Kaju Chicken Fry"
+          />
+
+          <div class="food-info">
+            <h3>Kaju Chicken Fry</h3>
+
+            <p class="description">Spicy • Crispy • Cashew Loaded</p>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong>₹99</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Kaju Chicken Fry"
+              data-price="99"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           10. CHOCOLATE CAKE
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍫</span>
+          <h2>Chocolate Cake</h2>
+        </div>
+
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/04_chocolate_cake.png') }}"
+            alt="Chocolate Cake"
+          />
+
+          <div class="food-info">
+            <h3>Chocolate Cake</h3>
+
+            <p class="description">Chocolate • Soft • Creamy</p>
+
+            <div class="price-display">
+              <span>Price</span>
+              <strong>₹89</strong>
+            </div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Chocolate Cake"
+              data-price="89"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           11. DRINK + SAMOSA COMBO
+           
+           IMPORTANT:
+           Combo card is different from normal food card.
+           Image is displayed large and completely.
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🥤</span>
+          <h2>Drink + Samosa Combo</h2>
+        </div>
+
+        <div class="food-card combo-card">
+          <!-- NAME ABOVE IMAGE -->
+
+          <h3 class="combo-name">Drink + Samosa Combo</h3>
+
+          <!-- FULL COMBO IMAGE -->
+
+          <img
+            class="combo-image"
+            src="{{ url_for('static', filename='images/05_soft_drink.png') }}"
+            alt="Drink and Samosa Combo"
+          />
+
+          <!-- DETAILS BELOW IMAGE -->
+
+          <div class="combo-info">
+            <p class="description">Samosa + Soft Drink</p>
+
+            <div class="combo-price">₹25</div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Drink + Samosa Combo"
+              data-price="25"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           12. CAKE + SAMOSA + SOFT DRINK COMBO
+           
+           This image already contains the complete combo.
+           We DO NOT add separate cake/samosa/drink images.
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍰</span>
+          <h2>Cake + Samosa + Soft Drink Combo</h2>
+        </div>
+
+        <div class="food-card combo-card">
+          <!-- NAME ABOVE IMAGE -->
+
+          <h3 class="combo-name">Chocolate Cake / Black Forest Combo</h3>
+
+          <!-- ONE COMPLETE COMBO IMAGE -->
+
+          <img
+            class="combo-image"
+            src="{{ url_for('static', filename='images/07_chocolate_cake_slice.png') }}"
+            alt="Chocolate Cake Black Forest Samosa Soft Drink Combo"
+          />
+
+          <!-- DETAILS BELOW IMAGE -->
+
+          <div class="combo-info">
+            <p class="description">Any Cake + Samosa + Soft Drink</p>
+
+            <div class="combo-price">₹149</div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Cake + Samosa + Soft Drink Combo"
+              data-price="149"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           13. KAJU CHICKEN + DRINK + CHACO CHACO COMBO
+           
+           Complete combo image is used only once.
+           ======================================================= -->
+
+      <section class="food-category">
+        <div class="category-title">
+          <span>🍗</span>
+          <h2>Kaju Chicken Fry Combo</h2>
+        </div>
+
+        <div class="food-card combo-card">
+          <!-- NAME ABOVE IMAGE -->
+
+          <h3 class="combo-name">Kaju Chicken Fry + Drink + Chaco Chaco</h3>
+
+          <!-- ONE COMPLETE COMBO IMAGE -->
+
+          <img
+            class="combo-image"
+            src="{{ url_for('static', filename='images/09_chaco_chaco.png') }}"
+            alt="Kaju Chicken Fry Drink Chaco Chaco Combo"
+          />
+
+          <!-- DETAILS BELOW IMAGE -->
+
+          <div class="combo-info">
+            <p class="description">
+              Kaju Chicken Fry + Soft Drink + Chaco Chaco
+            </p>
+
+            <div class="combo-price">₹179</div>
+
+            <button
+              class="add-cart-btn"
+              type="button"
+              data-product="Kaju Chicken Fry + Drink + Chaco Chaco Combo"
+              data-price="179"
+            >
+              ADD TO CART 🛒
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- =========================================================
+         BOTTOM CART BUTTON
+         ========================================================= -->
+
+    <section class="menu-bottom">
+      <h2>Hungry Already? 😋</h2>
+
+      <p>Choose all your favourites and add them to your cart!</p>
+
+      <a href="/cart" class="view-cart-btn"> 🛒 VIEW CART & CHECKOUT </a>
+    </section>
+
+    <!-- =========================================================
+         FOOTER
+         ========================================================= -->
+
+    <footer>
+      <h2>BACK BENCHERS</h2>
+
+      <p>FOOD STALL</p>
+
+      <span> Good Food ❤️ Good Friends ❤️ Great Times </span>
+    </footer>
+
+    <!-- =========================================================
+         MAIN JAVASCRIPT
+         ========================================================= -->
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,382 @@
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Order Successful | Back Benchers Food Stall</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <style>
+      .success-page {
+        width: 90%;
+        max-width: 850px;
+        margin: auto;
+        padding: 80px 0;
+        text-align: center;
+      }
+
+      .success-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+      }
+
+      .success-page h1 {
+        color: white;
+        font-size: 48px;
+        margin: 10px 0;
+      }
+
+      .success-page > p {
+        color: #aaa;
+        font-size: 18px;
+      }
+
+      .order-box {
+        margin-top: 40px;
+        padding: 30px;
+        background: #1c1c1c;
+        border: 1px solid #333;
+        border-radius: 20px;
+        text-align: left;
+      }
+
+      .order-box h2 {
+        color: #ff9d00;
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .customer-info {
+        color: #ddd;
+        line-height: 2;
+        border-bottom: 1px solid #333;
+        padding-bottom: 20px;
+      }
+
+      .customer-info strong {
+        color: white;
+      }
+
+      #order-id {
+        color: #ff9d00;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .success-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #333;
+      }
+
+      .success-item h3 {
+        color: white;
+        margin: 0 0 7px;
+      }
+
+      .success-item p {
+        color: #aaa;
+        margin: 4px 0;
+      }
+
+      .success-item strong {
+        color: #ff9d00;
+        font-size: 18px;
+      }
+
+      .success-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 25px;
+        padding-top: 20px;
+      }
+
+      .success-total span {
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+      }
+
+      #success-total {
+        color: #ff9d00;
+        font-size: 30px;
+      }
+
+      .order-note {
+        margin-top: 25px;
+        padding: 18px;
+        background: #33250f;
+        border: 1px solid #ff9d00;
+        border-radius: 12px;
+        color: #ddd;
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      .order-note strong {
+        color: #ff9d00;
+      }
+
+      .home-btn {
+        display: inline-block;
+        margin-top: 35px;
+        padding: 15px 35px;
+        background: #ff9d00;
+        color: #111;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .menu-btn {
+        display: inline-block;
+        margin-top: 15px;
+        margin-left: 10px;
+        padding: 15px 35px;
+        background: #292929;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      @media (max-width: 600px) {
+        .success-page h1 {
+          font-size: 36px;
+        }
+
+        .success-total {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .home-btn,
+        .menu-btn {
+          display: block;
+          margin: 15px auto 0;
+          width: 80%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= NAVBAR ================= -->
+
+    <header class="navbar">
+      <div class="logo-area">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Back Benchers Logo"
+        />
+
+        <div>
+          <h2>BACK BENCHERS</h2>
+          <span>FOOD STALL</span>
+        </div>
+      </div>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/menu">Menu</a>
+        <a href="/cart">🛒 Cart</a>
+      </nav>
+    </header>
+
+    <!-- ================= SUCCESS ================= -->
+
+    <main class="success-page">
+      <div class="success-icon">🎉</div>
+
+      <h1>Order Placed Successfully!</h1>
+
+      <p>Thank you for ordering from Back Benchers Food Stall ❤️</p>
+
+      <!-- ================= ORDER DETAILS ================= -->
+
+      <section class="order-box">
+        <h2>🧾 Order Details</h2>
+
+        <div class="customer-info">
+          <div>
+            <strong>Order ID:</strong>
+            <span id="order-id">---</span>
+          </div>
+
+          <div>
+            <strong>Name:</strong>
+            <span id="customer-name">---</span>
+          </div>
+
+          <div>
+            <strong>Mobile:</strong>
+            <span id="customer-phone">---</span>
+          </div>
+
+          <div>
+            <strong>Payment:</strong>
+            <span id="payment-method">---</span>
+          </div>
+
+          <div>
+            <strong>Order Time:</strong>
+            <span id="order-time">---</span>
+          </div>
+        </div>
+
+        <!-- ================= ITEMS ================= -->
+
+        <div id="success-items"></div>
+
+        <!-- ================= TOTAL ================= -->
+
+        <div class="success-total">
+          <span>Total Amount</span>
+
+          <strong id="success-total">₹0</strong>
+        </div>
+
+        <!-- ================= ORDER NOTE ================= -->
+
+        <div class="order-note">
+          🎫 Please remember your
+
+          <strong>Order ID</strong>
+
+          and show it at the stall when collecting your order.
+
+          <br />
+
+          Your Order ID is:
+
+          <strong id="order-id-note">---</strong>
+        </div>
+      </section>
+
+      <!-- ================= BUTTONS ================= -->
+
+      <a href="/" class="home-btn"> 🏠 BACK TO HOME </a>
+
+      <a href="/menu" class="menu-btn"> 🍴 ORDER MORE </a>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+      <h2>BACK BENCHERS</h2>
+
+      <p>FOOD STALL</p>
+
+      <span> Good Food ❤️ Good Friends ❤️ Great Times </span>
+    </footer>
+
+    <!-- ================= SCRIPT ================= -->
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        loadSuccessOrder();
+      });
+
+      function loadSuccessOrder() {
+        const order = JSON.parse(localStorage.getItem("lastOrder"));
+
+        if (!order) {
+          document.getElementById("success-items").innerHTML = `
+
+            <p style="color:#aaa; text-align:center; padding:30px;">
+
+              Order details are not available.
+
+            </p>
+
+          `;
+
+          return;
+        }
+
+        // ==========================
+        // CUSTOMER DETAILS
+        // ==========================
+
+        const orderId = order.orderId || "---";
+
+        document.getElementById("order-id").textContent = orderId;
+
+        document.getElementById("order-id-note").textContent = orderId;
+
+        document.getElementById("customer-name").textContent =
+          order.customerName || "---";
+
+        document.getElementById("customer-phone").textContent =
+          order.phone || "---";
+
+        document.getElementById("payment-method").textContent =
+          order.payment || "---";
+
+        document.getElementById("order-time").textContent =
+          order.createdAt || "---";
+
+        // ==========================
+        // ITEMS
+        // ==========================
+
+        const itemsContainer = document.getElementById("success-items");
+
+        itemsContainer.innerHTML = "";
+
+        let total = 0;
+
+        (order.items || []).forEach(function (item) {
+          const quantity = Number(item.quantity || 1);
+
+          const price = Number(item.price || 0);
+
+          const itemTotal = price * quantity;
+
+          total += itemTotal;
+
+          const itemElement = document.createElement("div");
+
+          itemElement.className = "success-item";
+
+          itemElement.innerHTML = `
+
+            <h3>
+              ${item.name || "Food Item"}
+            </h3>
+
+            ${item.option ? `<p>${item.option}</p>` : ""}
+
+            ${item.size ? `<p>Size: ${item.size}</p>` : ""}
+
+            <p>
+              Quantity: ${quantity}
+            </p>
+
+            <strong>
+              ₹${itemTotal}
+            </strong>
+
+          `;
+
+          itemsContainer.appendChild(itemElement);
+        });
+
+        // ==========================
+        // TOTAL
+        // ==========================
+
+        const finalTotal = Number(order.total || total);
+
+        document.getElementById("success-total").textContent = "₹" + finalTotal;
+      }
+    </script>
+  </body>
+</html>

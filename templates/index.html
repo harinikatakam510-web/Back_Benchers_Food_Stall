@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Back Benchers Food Stall</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+    <header class="navbar">
+      <div class="logo-area">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Back Benchers Logo"
+        />
+
+        <div>
+          <h2>BACK BENCHERS</h2>
+          <p>FOOD STALL</p>
+        </div>
+      </div>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/menu">Menu</a>
+        <a href="/cart">🛒 Cart</a>
+      </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="hero-content">
+        <p class="small-title">🍔 GOOD FOOD • GOOD FRIENDS • GREAT TIMES ❤️</p>
+
+        <h1>
+          TASTY BITES.<br />
+          HAPPY VIBES.
+        </h1>
+
+        <p class="hero-text">
+          Welcome to <strong>Back Benchers Food Stall</strong> — where every
+          bite brings good vibes!
+        </p>
+
+        <div class="hero-buttons">
+          <a href="/menu" class="btn primary-btn"> ORDER NOW 🍔 </a>
+
+          <a href="/menu" class="btn secondary-btn"> VIEW MENU </a>
+        </div>
+      </div>
+
+      <div class="hero-image">
+        <img
+          src="{{ url_for('static', filename='images/chips.jpg') }}"
+          alt="Delicious Loaded Chips"
+        />
+      </div>
+    </section>
+
+    <!-- POPULAR ITEMS -->
+    <section class="popular">
+      <div class="section-heading">
+        <p>FOODIES' FAVOURITES 🔥</p>
+
+        <h2>Our Popular Picks</h2>
+
+        <span> Made to satisfy your cravings! </span>
+      </div>
+
+      <div class="food-cards">
+        <!-- CHIPS -->
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/chips.jpg') }}"
+            alt="Loaded Chips"
+          />
+
+          <div class="food-info">
+            <h3>🍟 Chips Mix Loaded</h3>
+
+            <p>Crispy • Cheesy • Loaded</p>
+
+            <span> Starting ₹49 </span>
+          </div>
+        </div>
+
+        <!-- BURGER -->
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/burger.jpg') }}"
+            alt="Burger"
+          />
+
+          <div class="food-info">
+            <h3>🍔 Back Benchers Burger</h3>
+
+            <p>Juicy • Cheesy • Delicious</p>
+
+            <span> Starting ₹49 </span>
+          </div>
+        </div>
+
+        <!-- FRIES -->
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/fries.jpg') }}"
+            alt="French Fries"
+          />
+
+          <div class="food-info">
+            <h3>🍟 Loaded French Fries</h3>
+
+            <p>Crispy • Cheesy • Yummy</p>
+
+            <span> Starting ₹59 </span>
+          </div>
+        </div>
+
+        <!-- MASAKA BUN -->
+        <div class="food-card">
+          <img
+            src="{{ url_for('static', filename='images/bun.jpg') }}"
+            alt="Masaka Bun"
+          />
+
+          <div class="food-info">
+            <h3>🍞 Masaka Bun</h3>
+
+            <p>Sweet • Soft • Delicious</p>
+
+            <span> Starting ₹49 </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY US -->
+    <section class="why-us">
+      <div class="section-heading">
+        <p>WHY BACK BENCHERS? ❤️</p>
+
+        <h2>Eat. Chill. Repeat.</h2>
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div>⚡</div>
+          <h3>Quick Service</h3>
+          <p>Fast ordering and easy pickup.</p>
+        </div>
+
+        <div class="feature">
+          <div>😋</div>
+          <h3>Super Tasty</h3>
+          <p>Loaded with flavour in every bite.</p>
+        </div>
+
+        <div class="feature">
+          <div>❤️</div>
+          <h3>Made with Love</h3>
+          <p>Good food made for great vibes.</p>
+        </div>
+
+        <div class="feature">
+          <div>📱</div>
+          <h3>Easy Ordering</h3>
+          <p>Scan the QR and order easily.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="order-section">
+      <h2>Hungry Already? 😋</h2>
+
+      <p>Your favourite Back Benchers food is just one click away!</p>
+
+      <a href="/menu" class="btn primary-btn"> EXPLORE MENU 🍔 </a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <h2>BACK BENCHERS</h2>
+
+      <p>FOOD STALL</p>
+
+      <p>Good Food ❤️ Good Friends ❤️ Great Times</p>
+
+      <small> © 2026 Back Benchers Food Stall </small>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Checkout | Back Benchers Food Stall</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <style>
+      .checkout-page {
+        width: 90%;
+        max-width: 900px;
+        margin: auto;
+        padding: 70px 0;
+      }
+
+      .checkout-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .checkout-header p {
+        color: #ff3d81;
+        font-weight: bold;
+      }
+
+      .checkout-header h1 {
+        color: white;
+        font-size: 50px;
+        margin: 15px 0;
+      }
+
+      .checkout-header span {
+        color: #aaa;
+      }
+
+      .checkout-box {
+        background: #1c1c1c;
+        border: 1px solid #333;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 25px;
+      }
+
+      .checkout-box h2 {
+        color: #ff9d00;
+        margin-bottom: 25px;
+      }
+
+      /* CUSTOMER DETAILS */
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        color: white;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid #444;
+        background: #292929;
+        color: white;
+        font-size: 16px;
+        outline: none;
+      }
+
+      .form-group input:focus {
+        border-color: #ff9d00;
+      }
+
+      /* ORDER ITEMS */
+
+      #checkout-items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .checkout-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #292929;
+        border-radius: 10px;
+        color: white;
+        gap: 15px;
+      }
+
+      .checkout-item-details {
+        color: #aaa;
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      .checkout-item-price {
+        color: #ff9d00;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .checkout-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #444;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      #checkout-grand-total {
+        color: #ff9d00;
+      }
+
+      /* UPI */
+
+      .payment-box {
+        text-align: center;
+      }
+
+      .upi-badge {
+        display: inline-block;
+        padding: 12px 28px;
+        border: 2px solid #ff9d00;
+        border-radius: 30px;
+        color: #ff9d00;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .payment-description {
+        color: #aaa;
+        line-height: 1.7;
+        font-size: 16px;
+      }
+
+      .payment-amount {
+        margin: 25px auto;
+        padding: 20px;
+        max-width: 300px;
+        background: #292929;
+        border-radius: 15px;
+      }
+
+      .payment-amount span {
+        display: block;
+        color: #aaa;
+        margin-bottom: 8px;
+      }
+
+      .payment-amount strong {
+        color: #ff9d00;
+        font-size: 32px;
+      }
+
+      .upi-details {
+        margin-top: 20px;
+        padding: 20px;
+        background: #33250f;
+        border: 1px solid #5a461c;
+        border-radius: 12px;
+        color: #ddd;
+        line-height: 1.8;
+      }
+
+      .upi-id {
+        color: #ff9d00;
+        font-size: 22px;
+        font-weight: bold;
+        word-break: break-all;
+      }
+
+      .upi-name {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .copy-btn {
+        margin-top: 12px;
+        padding: 10px 20px;
+        border: 1px solid #ff9d00;
+        border-radius: 20px;
+        background: transparent;
+        color: #ff9d00;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .copy-btn:hover {
+        background: #ff9d00;
+        color: #111;
+      }
+
+      .steps {
+        text-align: left;
+        margin-top: 20px;
+        color: #ccc;
+      }
+
+      .steps p {
+        margin: 8px 0;
+      }
+
+      /* UTR */
+
+      .utr-group {
+        margin-top: 25px;
+        text-align: left;
+      }
+
+      .utr-group label {
+        display: block;
+        color: white;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      .utr-group input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid #444;
+        background: #292929;
+        color: white;
+        font-size: 16px;
+        outline: none;
+      }
+
+      .utr-group input:focus {
+        border-color: #ff9d00;
+      }
+
+      .utr-note {
+        color: #999;
+        font-size: 13px;
+        margin-top: 7px;
+      }
+
+      /* PLACE ORDER */
+
+      .place-order-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 30px;
+        background: #ff9d00;
+        color: #111;
+        font-size: 19px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .place-order-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+
+      .place-order-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .back-cart-btn {
+        display: block;
+        text-align: center;
+        color: #aaa;
+        margin-top: 20px;
+        text-decoration: none;
+      }
+
+      .back-cart-btn:hover {
+        color: #ff9d00;
+      }
+
+      .empty-checkout {
+        color: #aaa;
+        text-align: center;
+        padding: 20px;
+      }
+
+      @media (max-width: 600px) {
+        .checkout-header h1 {
+          font-size: 40px;
+        }
+
+        .checkout-box {
+          padding: 20px;
+        }
+
+        .checkout-total {
+          font-size: 20px;
+        }
+
+        .checkout-item {
+          gap: 10px;
+        }
+
+        .upi-id {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+
+    <header class="navbar">
+      <div class="logo-area">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Back Benchers Logo"
+        />
+
+        <div>
+          <h2>BACK BENCHERS</h2>
+          <span>FOOD STALL</span>
+        </div>
+      </div>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/menu">Menu</a>
+        <a href="/cart">🛒 Cart</a>
+      </nav>
+    </header>
+
+    <!-- CHECKOUT -->
+
+    <main class="checkout-page">
+      <!-- HEADER -->
+
+      <section class="checkout-header">
+        <p>🛒 ONE LAST STEP ❤️</p>
+
+        <h1>Checkout</h1>
+
+        <span> Review your order, pay using UPI and submit your UTR. </span>
+      </section>
+
+      <!-- ORDER SUMMARY -->
+
+      <section class="checkout-box">
+        <h2>🧾 Your Order</h2>
+
+        <div id="checkout-items"></div>
+
+        <div class="checkout-total">
+          <span>Total Amount</span>
+
+          <span id="checkout-grand-total"> ₹0 </span>
+        </div>
+      </section>
+
+      <!-- CUSTOMER DETAILS -->
+
+      <section class="checkout-box">
+        <h2>👤 Customer Details</h2>
+
+        <div class="form-group">
+          <label for="customer-name"> Your Name </label>
+
+          <input
+            type="text"
+            id="customer-name"
+            placeholder="Enter your name"
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="customer-phone"> Mobile Number </label>
+
+          <input
+            type="tel"
+            id="customer-phone"
+            placeholder="Enter your 10-digit mobile number"
+            maxlength="10"
+            inputmode="numeric"
+            autocomplete="tel"
+          />
+        </div>
+      </section>
+
+      <!-- DIRECT UPI PAYMENT -->
+
+      <section class="checkout-box payment-box">
+        <h2>📱 Pay Using UPI</h2>
+
+        <div class="upi-badge">📱 UPI PAYMENT ONLY</div>
+
+        <p class="payment-description">
+          Pay the exact amount to the UPI ID below.
+
+          <br />
+
+          After payment, enter the <strong>UTR / Transaction ID</strong>
+          to submit your order.
+        </p>
+
+        <!-- AMOUNT -->
+
+        <div class="payment-amount">
+          <span> Amount to Pay </span>
+
+          <strong id="upi-amount"> ₹0 </strong>
+        </div>
+
+        <!-- UPI DETAILS -->
+
+        <div class="upi-details">
+          <div>Pay to:</div>
+
+          <div class="upi-name">Back Benchers Food Stall</div>
+
+          <div class="upi-id" id="upi-id">8374857347@axl</div>
+
+          <button type="button" class="copy-btn" onclick="copyUPI()">
+            📋 COPY UPI ID
+          </button>
+
+          <div class="steps">
+            <p>1️⃣ Open Google Pay / PhonePe / Paytm / any UPI app.</p>
+
+            <p>2️⃣ Send the exact amount shown above.</p>
+
+            <p>3️⃣ After successful payment, copy the UTR / Transaction ID.</p>
+
+            <p>4️⃣ Enter the UTR below and place your order.</p>
+          </div>
+        </div>
+
+        <!-- UTR -->
+
+        <div class="utr-group">
+          <label for="utr"> 🔐 UTR / Transaction ID </label>
+
+          <input
+            type="text"
+            id="utr"
+            placeholder="Enter UTR / Transaction ID"
+            autocomplete="off"
+          />
+
+          <div class="utr-note">
+            You can find the UTR / Transaction ID in your UPI payment
+            transaction details.
+          </div>
+        </div>
+      </section>
+
+      <!-- PLACE ORDER -->
+
+      <section class="checkout-box">
+        <button type="button" id="place-order-btn" class="place-order-btn">
+          ✅ PAYMENT DONE — PLACE ORDER
+        </button>
+
+        <a href="/cart" class="back-cart-btn"> ← Back to Cart </a>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+
+    <footer>
+      <h2>BACK BENCHERS</h2>
+
+      <p>FOOD STALL</p>
+
+      <span> Good Food ❤️ Good Friends ❤️ Great Times </span>
+    </footer>
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        /* ==========================================
+     GET CART
+  ========================================== */
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        const checkoutItems = document.getElementById("checkout-items");
+
+        const grandTotal = document.getElementById("checkout-grand-total");
+
+        const upiAmount = document.getElementById("upi-amount");
+
+        const placeOrderBtn = document.getElementById("place-order-btn");
+
+        const utrInput = document.getElementById("utr");
+
+        /* ==========================================
+     CHECK EMPTY CART
+  ========================================== */
+
+        if (cart.length === 0) {
+          checkoutItems.innerHTML = `
+      <div class="empty-checkout">
+
+        Your cart is empty.
+
+        <br><br>
+
+        Please add items from the menu.
+
+      </div>
+    `;
+
+          grandTotal.textContent = "₹0";
+          upiAmount.textContent = "₹0";
+
+          placeOrderBtn.disabled = true;
+
+          return;
+        }
+
+        /* ==========================================
+     DISPLAY CART
+  ========================================== */
+
+        let total = 0;
+
+        cart.forEach(function (item) {
+          const quantity = Number(item.quantity) || 1;
+
+          const price = Number(item.price) || 0;
+
+          const itemTotal = price * quantity;
+
+          total += itemTotal;
+
+          const div = document.createElement("div");
+
+          div.className = "checkout-item";
+
+          let optionText = "";
+
+          if (item.option) {
+            optionText += item.option;
+          }
+
+          if (item.size) {
+            if (optionText) {
+              optionText += " • ";
+            }
+
+            optionText += item.size;
+          }
+
+          div.innerHTML = `
+
+      <div>
+
+        <strong>
+          ${escapeHTML(item.name || "Food Item")}
+        </strong>
+
+        <div class="checkout-item-details">
+
+          ${optionText ? escapeHTML(optionText) + " • " : ""}
+
+          Qty: ${quantity}
+
+        </div>
+
+      </div>
+
+
+      <div class="checkout-item-price">
+
+        ₹${itemTotal.toFixed(2)}
+
+      </div>
+
+    `;
+
+          checkoutItems.appendChild(div);
+        });
+
+        /* ==========================================
+     DISPLAY TOTAL
+  ========================================== */
+
+        grandTotal.textContent = "₹" + total.toFixed(2);
+
+        upiAmount.textContent = "₹" + total.toFixed(2);
+
+        /* ==========================================
+     PLACE ORDER
+  ========================================== */
+
+        placeOrderBtn.addEventListener("click", async function () {
+          /* CUSTOMER NAME */
+
+          const name = document.getElementById("customer-name").value.trim();
+
+          /* PHONE */
+
+          const phone = document.getElementById("customer-phone").value.trim();
+
+          /* UTR */
+
+          const utr = utrInput.value.trim();
+
+          /* ======================================
+         VALIDATE NAME
+      ====================================== */
+
+          if (!name) {
+            alert("Please enter your name.");
+
+            return;
+          }
+
+          /* ======================================
+         VALIDATE PHONE
+      ====================================== */
+
+          if (!/^[0-9]{10}$/.test(phone)) {
+            alert("Please enter a valid 10-digit mobile number.");
+
+            return;
+          }
+
+          /* ======================================
+         VALIDATE UTR
+      ====================================== */
+
+          if (!utr) {
+            alert("Please enter the UTR / Transaction ID.");
+
+            utrInput.focus();
+
+            return;
+          }
+
+          if (utr.length < 6) {
+            alert("Please enter a valid UTR / Transaction ID.");
+
+            utrInput.focus();
+
+            return;
+          }
+
+          /* ======================================
+         CONFIRM PAYMENT
+      ====================================== */
+
+          const confirmPayment = confirm(
+            "Have you completed the UPI payment of ₹" +
+              total.toFixed(2) +
+              "?\n\n" +
+              "Click OK only after completing the payment.",
+          );
+
+          if (!confirmPayment) {
+            return;
+          }
+
+          /* ======================================
+         DISABLE BUTTON
+      ====================================== */
+
+          placeOrderBtn.disabled = true;
+
+          placeOrderBtn.textContent = "SUBMITTING ORDER... ⏳";
+
+          try {
+            /* ====================================
+           SEND ORDER TO FLASK
+        ==================================== */
+
+            const response = await fetch("/place-order", {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                customerName: name,
+
+                phone: phone,
+
+                table: "Pre-Booking",
+
+                utr: utr,
+
+                items: cart,
+
+                total: total,
+              }),
+            });
+
+            /* ====================================
+           READ RESPONSE
+        ==================================== */
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+              throw new Error(result.message || "Unable to place order.");
+            }
+
+            /* ====================================
+           SAVE LAST ORDER
+        ==================================== */
+
+            const finalOrder = result.order || {
+              orderId: result.orderId,
+
+              customerName: name,
+
+              phone: phone,
+
+              table: "Pre-Booking",
+
+              payment: "Direct UPI",
+
+              paymentStatus: "Verification Pending",
+
+              utr: utr,
+
+              items: cart,
+
+              total: total,
+
+              date: new Date().toLocaleString(),
+
+              status: "New",
+            };
+
+            localStorage.setItem("lastOrder", JSON.stringify(finalOrder));
+
+            /* ====================================
+           CLEAR CART
+        ==================================== */
+
+            localStorage.removeItem("cart");
+
+            /* ====================================
+           GO TO SUCCESS PAGE
+        ==================================== */
+
+            window.location.href = "/success";
+          } catch (error) {
+            console.error("Order Error:", error);
+
+            alert("Unable to place order.\n\n" + error.message);
+
+            placeOrderBtn.disabled = false;
+
+            placeOrderBtn.textContent = "✅ PAYMENT DONE — PLACE ORDER";
+          }
+        });
+      });
+
+      /* ==========================================
+   COPY UPI ID
+========================================== */
+
+      function copyUPI() {
+        const upi = document.getElementById("upi-id").textContent.trim();
+
+        navigator.clipboard
+          .writeText(upi)
+          .then(function () {
+            alert("UPI ID copied successfully:\n" + upi);
+          })
+          .catch(function () {
+            alert("UPI ID: " + upi);
+          });
+      }
+
+      /* ==========================================
+   BASIC HTML ESCAPE
+========================================== */
+
+      function escapeHTML(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+
+          .replace(/</g, "&lt;")
+
+          .replace(/>/g, "&gt;")
+
+          .replace(/"/g, "&quot;")
+
+          .replace(/'/g, "&#039;");
+      }
+    </script>
+  </body>
+</html>

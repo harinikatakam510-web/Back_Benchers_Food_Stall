@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin | Back Benchers Food Stall</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <style>
+      .admin-page {
+        width: 92%;
+        max-width: 1200px;
+        margin: auto;
+        padding: 60px 0;
+      }
+
+      .admin-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .admin-header p {
+        color: #ff3d81;
+        font-weight: bold;
+      }
+
+      .admin-header h1 {
+        color: white;
+        font-size: 48px;
+        margin: 12px 0;
+      }
+
+      .admin-header span {
+        color: #aaa;
+      }
+
+      /* ================= ACTIONS ================= */
+
+      .admin-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .order-count {
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .refresh-btn {
+        border: none;
+        background: #ff9d00;
+        color: #111;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .refresh-btn:hover {
+        opacity: 0.9;
+      }
+
+      /* ================= ORDERS ================= */
+
+      #orders-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .order-card {
+        background: #1c1c1c;
+        border: 1px solid #333;
+        border-radius: 18px;
+        padding: 25px;
+      }
+
+      .order-card.pending {
+        border-color: #ff9d00;
+      }
+
+      .order-card.paid {
+        border-color: #27c93f;
+      }
+
+      .order-card.rejected {
+        border-color: #ff4d4d;
+        opacity: 0.85;
+      }
+
+      /* ================= ORDER TOP ================= */
+
+      .order-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid #333;
+        padding-bottom: 15px;
+        margin-bottom: 18px;
+      }
+
+      .order-id {
+        color: #ff9d00;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .order-time {
+        color: #aaa;
+        font-size: 14px;
+      }
+
+      /* ================= CUSTOMER ================= */
+
+      .customer-info {
+        margin-bottom: 20px;
+      }
+
+      .customer-info h3 {
+        color: white;
+        margin-bottom: 8px;
+      }
+
+      .customer-info p {
+        color: #aaa;
+        margin: 5px 0;
+      }
+
+      /* ================= ITEMS ================= */
+
+      .items-title {
+        color: #ff9d00;
+        margin-bottom: 10px;
+      }
+
+      .order-item {
+        background: #292929;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        color: white;
+      }
+
+      .item-details {
+        color: #aaa;
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      .item-price {
+        color: #ff9d00;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      /* ================= PAYMENT ================= */
+
+      .payment-box {
+        margin-top: 20px;
+        padding: 18px;
+        background: #242424;
+        border-radius: 12px;
+        border: 1px solid #3a3a3a;
+      }
+
+      .payment-box h3 {
+        color: #ff9d00;
+        margin-bottom: 12px;
+      }
+
+      .payment-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 6px 0;
+        flex-wrap: wrap;
+      }
+
+      .payment-label {
+        color: #aaa;
+      }
+
+      .payment-value {
+        color: white;
+        font-weight: bold;
+      }
+
+      .utr-value {
+        color: #ffc107;
+        font-size: 17px;
+        word-break: break-all;
+      }
+
+      /* ================= STATUS ================= */
+
+      .status {
+        display: inline-block;
+        padding: 7px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+      }
+
+      .status.pending {
+        background: #33250f;
+        color: #ff9d00;
+      }
+
+      .status.paid {
+        background: #12351b;
+        color: #27c93f;
+      }
+
+      .status.rejected {
+        background: #3a1515;
+        color: #ff4d4d;
+      }
+
+      /* ================= BOTTOM ================= */
+
+      .order-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid #333;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .payment {
+        color: white;
+      }
+
+      .payment span {
+        color: #aaa;
+      }
+
+      .total {
+        color: #ff9d00;
+        font-size: 25px;
+        font-weight: bold;
+      }
+
+      /* ================= ADMIN BUTTONS ================= */
+
+      .admin-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+
+      .accept-btn,
+      .reject-btn {
+        border: none;
+        padding: 12px 22px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .accept-btn {
+        background: #27c93f;
+        color: white;
+      }
+
+      .accept-btn:hover {
+        background: #1fae34;
+      }
+
+      .reject-btn {
+        background: #ff4d4d;
+        color: white;
+      }
+
+      .reject-btn:hover {
+        background: #dd3333;
+      }
+
+      /* ================= EMPTY ================= */
+
+      .empty-orders {
+        text-align: center;
+        padding: 80px 20px;
+        background: #1c1c1c;
+        border: 1px solid #333;
+        border-radius: 18px;
+      }
+
+      .empty-orders div {
+        font-size: 55px;
+      }
+
+      .empty-orders h2 {
+        color: white;
+        margin: 15px 0;
+      }
+
+      .empty-orders p {
+        color: #aaa;
+      }
+
+      /* ================= MOBILE ================= */
+
+      @media (max-width: 700px) {
+        .admin-header h1 {
+          font-size: 38px;
+        }
+
+        .order-item {
+          flex-direction: column;
+        }
+
+        .order-bottom {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .payment-row {
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .admin-buttons {
+          flex-direction: column;
+        }
+
+        .accept-btn,
+        .reject-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= NAVBAR ================= -->
+
+    <header class="navbar">
+      <div class="logo-area">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Back Benchers Logo"
+        />
+
+        <div>
+          <h2>BACK BENCHERS</h2>
+          <span>FOOD STALL</span>
+        </div>
+      </div>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/menu">Menu</a>
+        <a href="/cart">🛒 Cart</a>
+      </nav>
+    </header>
+
+    <!-- ================= ADMIN PAGE ================= -->
+
+    <main class="admin-page">
+      <section class="admin-header">
+        <p>🔔 BACK BENCHERS • ORDER MANAGEMENT</p>
+
+        <h1>Admin Orders</h1>
+
+        <span>
+          Verify UPI payments using the UTR number before accepting orders.
+        </span>
+      </section>
+
+      <!-- ================= ACTIONS ================= -->
+
+      <div class="admin-actions">
+        <div class="order-count">
+          📦 Orders:
+          <span id="order-count">0</span>
+        </div>
+
+        <button class="refresh-btn" type="button" onclick="loadOrders()">
+          🔄 REFRESH ORDERS
+        </button>
+      </div>
+
+      <!-- ================= ORDERS ================= -->
+
+      <section id="orders-container">
+        <div class="empty-orders">
+          <div>📦</div>
+
+          <h2>Loading Orders...</h2>
+
+          <p>Please wait...</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+      <h2>BACK BENCHERS</h2>
+
+      <p>FOOD STALL</p>
+
+      <span> Good Food ❤️ Good Friends ❤️ Great Times </span>
+    </footer>
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+      /* =====================================================
+         ESCAPE HTML
+         Prevents customer-entered text from becoming HTML.
+      ===================================================== */
+
+      function escapeHTML(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      /* =====================================================
+         LOAD ORDERS
+      ===================================================== */
+
+      function loadOrders() {
+        fetch("/api/orders", {
+          method: "GET",
+          cache: "no-store",
+        })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("Unable to load orders.");
+            }
+
+            return response.json();
+          })
+
+          .then(function (data) {
+            const container = document.getElementById("orders-container");
+
+            const count = document.getElementById("order-count");
+
+            container.innerHTML = "";
+
+            /* =================================================
+             EMPTY ORDERS
+          ================================================= */
+
+            if (!data.success || !data.orders || data.orders.length === 0) {
+              count.textContent = "0";
+
+              container.innerHTML = `
+
+              <div class="empty-orders">
+
+                <div>🛒</div>
+
+                <h2>No Orders Yet</h2>
+
+                <p>
+                  Customer orders will appear here.
+                </p>
+
+              </div>
+
+            `;
+
+              return;
+            }
+
+            /* =================================================
+             ORDER COUNT
+          ================================================= */
+
+            count.textContent = data.orders.length;
+
+            /* =================================================
+             DISPLAY ORDERS
+          ================================================= */
+
+            data.orders.forEach(function (order) {
+              const card = document.createElement("div");
+
+              /* ===============================
+               PAYMENT STATUS
+            =============================== */
+
+              const paymentStatus =
+                order.paymentStatus || "Pending Verification";
+
+              let statusClass = "pending";
+
+              if (paymentStatus.toLowerCase() === "paid") {
+                statusClass = "paid";
+              } else if (paymentStatus.toLowerCase() === "rejected") {
+                statusClass = "rejected";
+              }
+
+              card.className = "order-card " + statusClass;
+
+              /* ===============================
+               ITEMS
+            =============================== */
+
+              let itemsHTML = "";
+
+              if (Array.isArray(order.items) && order.items.length > 0) {
+                order.items.forEach(function (item) {
+                  const quantity = Number(item.quantity) || 1;
+
+                  const price = Number(item.price) || 0;
+
+                  const itemTotal = price * quantity;
+
+                  let options = "";
+
+                  if (item.option) {
+                    options += escapeHTML(item.option);
+                  }
+
+                  if (item.size) {
+                    if (options) {
+                      options += " • ";
+                    }
+
+                    options += escapeHTML(item.size);
+                  }
+
+                  itemsHTML += `
+
+                  <div class="order-item">
+
+                    <div>
+
+                      <strong>
+                        ${escapeHTML(item.name)}
+                      </strong>
+
+                      <div class="item-details">
+
+                        ${options ? options + " • " : ""}
+
+                        Qty: ${quantity}
+
+                      </div>
+
+                    </div>
+
+
+                    <div class="item-price">
+
+                      ₹${itemTotal.toFixed(2)}
+
+                    </div>
+
+                  </div>
+
+                `;
+                });
+              }
+
+              /* ===============================
+               PAYMENT DETAILS
+            =============================== */
+
+              const utr =
+                order.utr ||
+                order.transactionId ||
+                order.paymentReference ||
+                "Not provided";
+
+              const paymentMethod = order.payment || "Direct UPI";
+
+              /* ===============================
+               ACTION BUTTONS
+            =============================== */
+
+              let actionButtons = "";
+
+              if (
+                paymentStatus.toLowerCase() === "pending verification" ||
+                paymentStatus.toLowerCase() === "pending"
+              ) {
+                actionButtons = `
+
+                <div class="admin-buttons">
+
+                  <button
+                    type="button"
+                    class="accept-btn"
+                    onclick="updatePaymentStatus(
+                      '${escapeHTML(order.orderId)}',
+                      'Paid'
+                    )"
+                  >
+                    ✅ ACCEPT PAYMENT
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="reject-btn"
+                    onclick="updatePaymentStatus(
+                      '${escapeHTML(order.orderId)}',
+                      'Rejected'
+                    )"
+                  >
+                    ❌ REJECT PAYMENT
+                  </button>
+
+                </div>
+
+              `;
+              }
+
+              /* ===============================
+               CARD HTML
+            =============================== */
+
+              card.innerHTML = `
+
+              <div class="order-top">
+
+                <div class="order-id">
+
+                  🔔 ${escapeHTML(order.orderId)}
+
+                </div>
+
+
+                <div class="order-time">
+
+                  ${escapeHTML(order.createdAt)}
+
+                </div>
+
+              </div>
+
+
+              <div class="customer-info">
+
+                <h3>
+                  👤 ${escapeHTML(order.customerName)}
+                </h3>
+
+                <p>
+                  📱 ${escapeHTML(order.phone)}
+                </p>
+
+                ${
+                  order.table
+                    ? `
+                    <p>
+                      🪑 ${escapeHTML(order.table)}
+                    </p>
+                  `
+                    : ""
+                }
+
+              </div>
+
+
+              <h3 class="items-title">
+
+                🧾 Ordered Items
+
+              </h3>
+
+
+              ${itemsHTML}
+
+
+              <!-- PAYMENT INFORMATION -->
+
+              <div class="payment-box">
+
+                <h3>
+                  💳 UPI Payment Details
+                </h3>
+
+
+                <div class="payment-row">
+
+                  <span class="payment-label">
+                    Payment Method
+                  </span>
+
+                  <span class="payment-value">
+                    ${escapeHTML(paymentMethod)}
+                  </span>
+
+                </div>
+
+
+                <div class="payment-row">
+
+                  <span class="payment-label">
+                    UTR / Transaction ID
+                  </span>
+
+                  <span class="utr-value">
+                    ${escapeHTML(utr)}
+                  </span>
+
+                </div>
+
+
+                <div class="payment-row">
+
+                  <span class="payment-label">
+                    Payment Status
+                  </span>
+
+                  <span class="status ${statusClass}">
+
+                    ${escapeHTML(paymentStatus)}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <!-- ORDER BOTTOM -->
+
+              <div class="order-bottom">
+
+                <div class="payment">
+
+                  💳 Payment:
+                  <span>
+                    Direct UPI
+                  </span>
+
+                </div>
+
+
+                <div class="total">
+
+                  Total:
+                  ₹${Number(order.total || 0).toFixed(2)}
+
+                </div>
+
+              </div>
+
+
+              ${actionButtons}
+
+            `;
+
+              container.appendChild(card);
+            });
+          })
+
+          .catch(function (error) {
+            console.error("Order loading error:", error);
+
+            document.getElementById("orders-container").innerHTML = `
+
+            <div class="empty-orders">
+
+              <div>⚠️</div>
+
+              <h2>Unable to Load Orders</h2>
+
+              <p>
+                Please check whether Flask server is running.
+              </p>
+
+            </div>
+
+          `;
+          });
+      }
+
+      /* =====================================================
+         UPDATE PAYMENT STATUS
+         
+         NOTE:
+         This requires /api/orders/<order_id>/payment-status
+         route in app.py.
+      ===================================================== */
+
+      function updatePaymentStatus(orderId, status) {
+        if (!orderId) {
+          return;
+        }
+
+        const message =
+          status === "Paid"
+            ? "Did you verify this UTR/payment in your UPI app and confirm that the amount was received?"
+            : "Are you sure you want to reject this payment?";
+
+        if (!confirm(message)) {
+          return;
+        }
+
+        fetch(
+          "/api/orders/" + encodeURIComponent(orderId) + "/payment-status",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              paymentStatus: status,
+            }),
+          },
+        )
+          .then(function (response) {
+            return response.json();
+          })
+
+          .then(function (data) {
+            if (!data.success) {
+              throw new Error(
+                data.message || "Unable to update payment status.",
+              );
+            }
+
+            alert(
+              status === "Paid"
+                ? "✅ Payment accepted successfully."
+                : "❌ Payment rejected.",
+            );
+
+            loadOrders();
+          })
+
+          .catch(function (error) {
+            console.error("Payment status error:", error);
+
+            alert("Unable to update payment status.\n\n" + error.message);
+          });
+      }
+
+      /* =====================================================
+         INITIAL LOAD
+      ===================================================== */
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadOrders();
+      });
+
+      /* =====================================================
+         AUTO REFRESH
+         
+         Every 5 seconds.
+      ===================================================== */
+
+      setInterval(loadOrders, 5000);
+    </script>
+  </body>
+</html>
